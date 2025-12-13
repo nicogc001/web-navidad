@@ -2,15 +2,18 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const pool = require("./db");
 const { initDb } = require("./initDb");
 
 
 const app = express();
+const FRONTEND_DIR = path.join(__dirname, "../frontend");
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.static(FRONTEND_DIR));
 
 // --------------------
 // Auth middleware
@@ -238,7 +241,7 @@ app.get("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
 
 // --- Raíz simple ---
 app.get("/", (req, res) => {
-  res.send("Backend Navidad funcionando");
+  res.sendFile(path.join(FRONTEND_DIR, "index.html"));
 });
 
 // --- 404 ---
