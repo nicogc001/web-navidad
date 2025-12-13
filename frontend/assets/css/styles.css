@@ -2,19 +2,24 @@
    VARIABLES BASE
 ========================= */
 :root {
-  --bg-1: #fff7f3;   /* crema */
-  --bg-2: #fdecec;   /* rosa muy suave */
-  --bg-3: #eef7f1;   /* verde menta claro */
+  /* Fondos pastel cálidos (más oscuros) */
+  --bg-1: #f3e3d6;   /* crema tostado */
+  --bg-2: #e9cfc1;   /* naranja pastel */
+  --bg-3: #e4d9c9;   /* beige cálido */
 
-  --text: #1f2937;   /* gris oscuro (no negro) */
-  --muted: #6b7280;
+  /* Texto */
+  --text: #3b2f2a;   /* marrón oscuro elegante */
+  --muted: #6b5a4e;
 
-  --card: rgba(255,255,255,.85);
-  --border: rgba(0,0,0,.08);
+  /* UI */
+  --card: rgba(255,255,255,.78);
+  --border: rgba(0,0,0,.12);
 
-  --primary: #e24b4b;   /* rojo pastel */
-  --secondary: #6fbf8e; /* verde pastel */
+  /* Acentos */
+  --primary: #d97745;   /* naranja navideño */
+  --secondary: #7fb38c; /* verde apagado */
 }
+
 
 /* =========================
    RESET / BASE
