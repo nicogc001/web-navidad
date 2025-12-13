@@ -2,18 +2,18 @@
    VARIABLES BASE
 ========================= */
 :root {
-  --bg-1: #0b0f1a;
-  --bg-2: #1a0f14;
-  --bg-3: #0f1a14;
+  --bg-1: #fff7f3;   /* crema */
+  --bg-2: #fdecec;   /* rosa muy suave */
+  --bg-3: #eef7f1;   /* verde menta claro */
 
-  --text: #f8fafc;
-  --muted: #cbd5e1;
+  --text: #1f2937;   /* gris oscuro (no negro) */
+  --muted: #6b7280;
 
-  --card: rgba(255,255,255,.08);
-  --border: rgba(255,255,255,.14);
+  --card: rgba(255,255,255,.85);
+  --border: rgba(0,0,0,.08);
 
-  --primary: #ef4444;
-  --secondary: #22c55e;
+  --primary: #e24b4b;   /* rojo pastel */
+  --secondary: #6fbf8e; /* verde pastel */
 }
 
 /* =========================
@@ -33,11 +33,10 @@ html, body {
 body {
   min-height: 100vh;
   background:
-    linear-gradient(135deg,
-      var(--bg-2),
-      var(--bg-1),
-      var(--bg-3)
-    );
+    radial-gradient(circle at 20% 20%, #ffecec, transparent 55%),
+    radial-gradient(circle at 80% 30%, #eaf7ef, transparent 55%),
+    radial-gradient(circle at 50% 80%, #fff6e8, transparent 60%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-3));
 }
 
 /* =========================
@@ -48,7 +47,7 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: .75;
+  opacity: .55;
 }
 
 .bg, .container, .topbar, .card, .footer {
