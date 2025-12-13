@@ -64,4 +64,26 @@ async function initDb(pool) {
   }
   
   module.exports = { initDb };
+
+  const bcrypt = require("bcrypt");
+
+async function ensureAdmin(pool) {
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@webnavidad.com";
+  const adminPass = process.env.ADMIN_PASSWORD || "admin123";
+
+  const r = await pool.query("SELECT id FROM usuarios WHERE email = $1", [adminEmail]);
+
+  if (r.rowCount > 0) return;
+
+  const hash = await bcrypt.hash(adminPass, 10);
+
+  await pool.query(
+    `INSERT INTO usuarios (nombre, email, password_hash, rol, activo)
+     VALUES ($1, $2, $3, 'admin', TRUE)`,
+    ["Administrador", adminEmail, hash]
+  );
+
+  console.log("✅ Admin creado:", adminEmail);
+}
+await ensureAdmin(pool);
   
