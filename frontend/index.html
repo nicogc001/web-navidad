@@ -4,193 +4,226 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Web Navidad | Roscones, dulces y ofertas</title>
+
+  <!-- Bootstrap CSS (CDN) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+
+  <!-- Tu CSS -->
   <link rel="stylesheet" href="./assets/css/styles.css" />
 </head>
 
 <body>
+  <!-- Nieve -->
   <canvas id="snow"></canvas>
 
-  <div class="bg">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-glass sticky-top border-bottom border-white-10">
     <div class="container">
-      <header class="topbar">
-        <div class="brand">
-          <div class="brand-badge">🎄</div>
-          <div>
-            <div class="brand-title">Web Navidad</div>
-            <div class="brand-subtitle">Roscones · Dulces · Ofertas</div>
-          </div>
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <span class="brand-badge">🎄</span>
+        <span class="fw-bold">Web Navidad</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav ms-auto gap-lg-2">
+          <li class="nav-item"><a class="nav-link" href="#productos">Productos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#ofertas">Ofertas</a></li>
+          <li class="nav-item"><a class="nav-link" href="#encargos">Encargos</a></li>
+        </ul>
+
+        <div class="d-flex ms-lg-3 mt-3 mt-lg-0">
+          <a class="btn btn-outline-light btn-sm" href="./login.html">Admin</a>
         </div>
+      </div>
+    </div>
+  </nav>
 
-        <nav class="nav">
-          <a class="nav-link" href="#productos">Productos</a>
-          <a class="nav-link" href="#ofertas">Ofertas</a>
-          <a class="nav-link" href="#encargos">Encargos</a>
+  <!-- Hero -->
+  <header class="hero-wrap py-4 py-lg-5">
+    <div class="container position-relative">
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-7">
+          <div class="card card-glass h-100">
+            <div class="card-body p-4 p-lg-5">
+              <div class="d-inline-flex align-items-center gap-2 badge-glass mb-3">
+                <span class="dot"></span>
+                <span class="fw-semibold">Temporada Navidad (13 dic · 6 ene)</span>
+              </div>
 
-          <!-- Dinámico: Admin / Panel + Salir -->
-          <span id="adminNav"></span>
-        </nav>
-      </header>
+              <h1 class="display-6 fw-bold mb-3">
+                Roscones de Reyes y dulces navideños<br class="d-none d-md-block" />
+                con acabado artesanal.
+              </h1>
 
-      <!-- HERO -->
-      <main class="hero card">
-        <div class="hero-left">
-          <div class="badge">
-            <span class="dot"></span>
-            Temporada Navidad (13 dic · 6 ene)
-          </div>
+              <p class="text-muted mb-4">
+                Selección de roscones (clásico, nata, trufa), turrones, polvorones y packs.
+                Encargos por WhatsApp y recogida en tienda.
+              </p>
 
-          <h1 class="hero-title">
-            Roscones de Reyes y dulces navideños<br/>
-            con acabado artesanal.
-          </h1>
+              <div class="d-flex flex-wrap gap-2 mb-4">
+                <a class="btn btn-primary" href="#productos">Ver productos</a>
+                <a class="btn btn-outline-light" href="#ofertas">Ver ofertas</a>
+              </div>
 
-          <p class="hero-text">
-            Selección de roscones (clásico, nata, trufa), turrones, polvorones y packs.
-            Encargos por WhatsApp y recogida en tienda.
-          </p>
-
-          <div class="hero-actions">
-            <a class="btn primary" href="#productos">Ver productos</a>
-            <a class="btn" href="#ofertas">Ver ofertas</a>
-          </div>
-
-          <div class="hero-kpis">
-            <div class="kpi">
-              <div class="kpi-title">Producción diaria</div>
-              <div class="kpi-value">Limitada</div>
-              <div class="kpi-sub">Recomendamos reservar</div>
-            </div>
-            <div class="kpi">
-              <div class="kpi-title">Recogida</div>
-              <div class="kpi-value">Rápida</div>
-              <div class="kpi-sub">Sin esperas innecesarias</div>
-            </div>
-            <div class="kpi">
-              <div class="kpi-title">Packs</div>
-              <div class="kpi-value">Ahorro</div>
-              <div class="kpi-sub">Ofertas activas</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-right">
-          <div class="hero-card">
-            <div class="hero-card-top">
-              <div class="hero-card-title">Recomendación</div>
-              <div class="pill">Top ventas</div>
-            </div>
-            <div class="hero-card-body">
-              <div class="hero-product">
-                <div class="hero-product-icon">👑</div>
-                <div>
-                  <div class="hero-product-name">Roscón relleno nata</div>
-                  <div class="hero-product-desc">Perfecto para Reyes</div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="mini-card">
+                    <div class="text-muted small fw-semibold">Producción diaria</div>
+                    <div class="fw-bold fs-6 mt-1">Limitada</div>
+                    <div class="text-muted small mt-1">Recomendamos reservar</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mini-card">
+                    <div class="text-muted small fw-semibold">Recogida</div>
+                    <div class="fw-bold fs-6 mt-1">Rápida</div>
+                    <div class="text-muted small mt-1">Sin esperas innecesarias</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mini-card">
+                    <div class="text-muted small fw-semibold">Packs</div>
+                    <div class="fw-bold fs-6 mt-1">Ahorro</div>
+                    <div class="text-muted small mt-1">Ofertas activas</div>
+                  </div>
                 </div>
               </div>
 
-              <div class="hero-card-note muted small">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card card-glass h-100">
+            <div class="card-body p-4 p-lg-5">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="fw-bold">Recomendación</div>
+                <span class="pill">Top ventas</span>
+              </div>
+
+              <div class="d-flex align-items-center gap-3">
+                <div class="icon-chip">👑</div>
+                <div>
+                  <div class="fw-bold">Roscón relleno nata</div>
+                  <div class="text-muted small">Perfecto para Reyes</div>
+                </div>
+              </div>
+
+              <hr class="border-white-10 my-4" />
+
+              <div class="text-muted small">
                 Nota: la disponibilidad puede variar según producción del día.
               </div>
             </div>
           </div>
 
-          <div class="hero-glow"></div>
+          <div class="glow"></div>
         </div>
-      </main>
+      </div>
+    </div>
+  </header>
 
-      <!-- PRODUCTOS -->
-      <section id="productos" class="section">
-        <div class="section-head">
-          <div>
-            <h2 class="h1">Productos navideños</h2>
-            <p class="muted">Cargados desde la API. Precios orientativos por unidad.</p>
-          </div>
-
-          <div class="filters">
-            <input id="searchInput" class="input" placeholder="Buscar (roscón, turrón...)" />
-            <select id="sortSelect" class="input">
-              <option value="default">Orden por defecto</option>
-              <option value="priceAsc">Precio: menor a mayor</option>
-              <option value="priceDesc">Precio: mayor a menor</option>
-              <option value="nameAsc">Nombre: A-Z</option>
-            </select>
-          </div>
+  <!-- Productos -->
+  <section id="productos" class="py-4 py-lg-5">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+        <div>
+          <h2 class="h3 fw-bold mb-1">Productos navideños</h2>
+          <p class="text-muted mb-0">Cargados desde la API. Precios orientativos por unidad.</p>
         </div>
 
-        <div id="productosGrid" class="grid-cards">
-          <div class="card skeleton-card">Cargando productos…</div>
+        <div class="d-flex flex-wrap gap-2">
+          <input id="searchInput" class="form-control form-control-sm input-glass" placeholder="Buscar (roscón, turrón...)" />
+          <select id="sortSelect" class="form-select form-select-sm input-glass">
+            <option value="default">Orden por defecto</option>
+            <option value="priceAsc">Precio: menor a mayor</option>
+            <option value="priceDesc">Precio: mayor a menor</option>
+            <option value="nameAsc">Nombre: A-Z</option>
+          </select>
         </div>
-      </section>
+      </div>
 
-      <!-- OFERTAS -->
-      <section id="ofertas" class="section">
-        <div class="section-head">
-          <div>
-            <h2 class="h1">Ofertas activas</h2>
-            <p class="muted">Packs y descuentos por temporada.</p>
+      <div id="productosGrid" class="row g-3">
+        <!-- Skeleton -->
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card card-glass">
+            <div class="card-body text-muted">Cargando productos…</div>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <div id="ofertasGrid" class="grid-cards">
-          <div class="card skeleton-card">Cargando ofertas…</div>
+  <!-- Ofertas -->
+  <section id="ofertas" class="py-4 py-lg-5">
+    <div class="container">
+      <div class="mb-3">
+        <h2 class="h3 fw-bold mb-1">Ofertas activas</h2>
+        <p class="text-muted mb-0">Packs y descuentos por temporada.</p>
+      </div>
+
+      <div id="ofertasGrid" class="row g-3">
+        <!-- Skeleton -->
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card card-glass">
+            <div class="card-body text-muted">Cargando ofertas…</div>
+          </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </section>
 
-      <!-- ENCARGOS-->
-      <section id="encargos" class="section">
-        <div class="card callout">
+  <!-- Encargos -->
+  <section id="encargos" class="py-4 py-lg-5">
+    <div class="container">
+      <div class="card card-glass">
+        <div class="card-body p-4 p-lg-5 d-flex flex-column flex-lg-row justify-content-between gap-4 align-items-start align-items-lg-center">
           <div>
-            <h2 class="h1">Encargos y reservas</h2>
-            <p class="muted">
+            <h2 class="h3 fw-bold mb-2">Encargos y reservas</h2>
+            <p class="text-muted mb-0">
               Para asegurar disponibilidad, envíanos un WhatsApp con lo que necesitas y el día de recogida.
             </p>
+            <div class="text-muted small mt-2">
+              Consejo: indica “Roscón (tipo) + tamaño + fecha + nombre + teléfono”.
+            </div>
           </div>
 
-          <div class="callout-actions">
-            <a id="whatsBtn" class="btn primary" href="#" rel="noopener">Encargar por WhatsApp</a>
-            <a class="btn" href="#productos">Volver a productos</a>
-          </div>
-
-          <div class="divider"></div>
-          <div class="small muted">
-            Consejo: indica “Roscón (tipo) + tamaño + fecha + nombre + teléfono”.
+          <div class="d-flex flex-wrap gap-2">
+            <a id="whatsBtn" class="btn btn-primary" href="#" rel="noopener">Encargar por WhatsApp</a>
+            <a class="btn btn-outline-light" href="#productos">Volver a productos</a>
           </div>
         </div>
-      </section>
-
-      <footer class="footer">
-        <span class="muted small">© 2025 Web Navidad</span>
-        <span class="muted small"> · API: <span id="apiUrl"></span></span>
-      </footer>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <script defer src="./assets/js/config.js"></script>
-  <script defer src="./assets/js/index.js"></script>
-  <script defer src="./assets/js/snow.js"></script>
+  <!-- Footer -->
+  <footer class="py-4">
+    <div class="container d-flex flex-wrap justify-content-between gap-2 text-muted small">
+      <span>© 2025 Web Navidad</span>
+      <span>API: <span id="apiUrl"></span></span>
+    </div>
+  </footer>
 
-  <!-- Admin / Panel dinámico -->
-  <script defer>
-    (() => {
-      const adminNav = document.getElementById("adminNav");
-      if (!adminNav) return;
+  <!-- Bootstrap JS (CDN) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
 
-      const token = localStorage.getItem("token");
-
-      if (token) {
-        adminNav.innerHTML = `
-          <a class="btn ghost small-btn" href="./admin.html">Panel</a>
-          <button id="logoutBtn" class="btn ghost small-btn" type="button">Salir</button>
-        `;
-
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-          localStorage.removeItem("token");
-          window.location.reload();
-        });
-      } else {
-        adminNav.innerHTML = `<a class="btn ghost small-btn" href="./login.html">Admin</a>`;
-      }
-    })();
-  </script>
+  <!-- Tu JS -->
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/index.js"></script>
+  <script src="./assets/js/snow.js"></script>
 </body>
 </html>

@@ -2,92 +2,92 @@
    VARIABLES BASE
 ========================= */
 :root {
-  /* Fondos pastel cálidos – un punto más oscuro */
-  --bg-1: #e6cbb8;   /* crema tostado */
-  --bg-2: #ddb49c;   /* naranja pastel más profundo */
-  --bg-3: #d6c3ae;   /* beige cálido oscuro */
+  /* Fondos cálidos navideños (más oscuros para que se vean los copos) */
+  --nv-bg-1: #b98b72;   /* crema tostado oscuro */
+  --nv-bg-2: #a86f52;   /* naranja pastel más profundo */
+  --nv-bg-3: #8f6a57;   /* cacao/beige oscuro */
 
   /* Texto */
-  --text: #2f2622;   /* marrón más oscuro */
-  --muted: #5a4b41;
+  --nv-text: #221b18;
+  --nv-muted: rgba(34, 27, 24, 0.72);
 
-  /* UI */
-  --card: rgba(255,255,255,.75);
-  --border: rgba(0,0,0,.14);
+  /* Superficies */
+  --nv-card: rgba(255,255,255,.78);
+  --nv-card-strong: rgba(255,255,255,.86);
+  --nv-border: rgba(0,0,0,.12);
 
   /* Acentos */
-  --primary: #c86638;   /* naranja navideño más serio */
-  --secondary: #6fa084; /* verde apagado */
+  --nv-primary: #c86638;   /* naranja navideño */
+  --nv-secondary: #6fa084; /* verde apagado */
 }
-
-
 
 /* =========================
-   RESET / BASE
+   BASE
 ========================= */
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html, body {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
-  color: var(--text);
+  color: var(--nv-text);
 }
 
+/* Si usas Bootstrap, su font-stack ya es correcta; si no, mantenemos una segura */
 body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(200,102,56,.28), transparent 55%),
-    radial-gradient(circle at 82% 30%, rgba(111,160,132,.22), transparent 55%),
-    radial-gradient(circle at 50% 88%, rgba(214,195,174,.45), transparent 60%),
-    linear-gradient(180deg, var(--bg-1), var(--bg-3));
-}
 
+  background:
+    radial-gradient(circle at 18% 18%, rgba(200,102,56,.22), transparent 55%),
+    radial-gradient(circle at 82% 30%, rgba(111,160,132,.18), transparent 55%),
+    radial-gradient(circle at 50% 88%, rgba(214,195,174,.22), transparent 60%),
+    linear-gradient(180deg, var(--nv-bg-1), var(--nv-bg-3));
+}
 
 /* =========================
    SNOW CANVAS
+   (lo hacemos más visible con blend + opacidad)
 ========================= */
 #snow{
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: .9;
+  opacity: .95;
+  mix-blend-mode: screen; /* ayuda a que destaque sobre fondos cálidos */
 }
 
-.bg, .container, .topbar, .card, .footer {
+/* Contenido encima del canvas */
+.nv-bg,
+.nv-page,
+.nv-topbar,
+.nv-surface,
+.nv-footer {
   position: relative;
   z-index: 1;
 }
 
 /* =========================
-   LAYOUT
+   LAYOUT (no usar .container/.card de Bootstrap)
 ========================= */
-.container {
+.nv-page{
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
 }
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
+.nv-surface{
+  background: var(--nv-card);
+  border: 1px solid var(--nv-border);
   border-radius: 18px;
   padding: 16px;
   backdrop-filter: blur(6px);
 }
 
-.footer {
-  margin-top: 32px;
-  text-align: center;
-}
-
 /* =========================
-   TOPBAR / NAV
+   TOPBAR
 ========================= */
-.topbar {
+.nv-topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -95,101 +95,52 @@ body {
   margin-bottom:18px;
 }
 
-.brand {
+.nv-brand{
   display:flex;
   align-items:center;
   gap:12px;
 }
 
-.brand-badge {
+.nv-brand-badge{
   width:40px;
   height:40px;
   border-radius:14px;
   display:grid;
   place-items:center;
-  background:linear-gradient(180deg, rgba(239,68,68,.35), rgba(34,197,94,.25));
-  border:1px solid var(--border);
+  background: linear-gradient(180deg, rgba(239,68,68,.28), rgba(34,197,94,.20));
+  border:1px solid var(--nv-border);
 }
 
-.brand-title {
-  font-weight:900;
-  font-size:18px;
-}
+.nv-brand-title{ font-weight:900; font-size:18px; }
+.nv-brand-subtitle{ font-size:12px; color: var(--nv-muted); }
 
-.brand-subtitle {
-  font-size:12px;
-  color:var(--muted);
-}
-
-.nav{
+/* Links de navegación (sin pisar .nav-link de Bootstrap) */
+.nv-nav{
   display:flex;
   gap:12px;
   align-items:center;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
-.nav-link{
-  color:var(--muted);
+.nv-navlink{
+  color: rgba(255,255,255,.82);
   text-decoration:none;
-  font-weight:700;
-  font-size:13px
-}
-
-.nav-link:hover{
-  color:var(--text);
-  text-decoration:underline
-}
-
-/* =========================
-   BUTTONS / INPUTS
-========================= */
-.btn {
-  padding:10px 14px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,.25);
-  color:var(--text);
   font-weight:800;
   font-size:13px;
-  text-decoration:none;
-  cursor:pointer;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.16);
 }
-
-.btn:hover {
-  background:rgba(255,255,255,.12);
-}
-
-.btn.primary {
-  background:linear-gradient(180deg, rgba(239,68,68,.9), rgba(220,38,38,.85));
-  border-color:rgba(239,68,68,.7);
-}
-
-.btn.primary:hover {
-  filter:brightness(1.05);
-}
-
-.btn.ghost {
-  background:transparent;
-}
-
-.small-btn {
-  padding:9px 10px;
-  font-size:12px;
-}
-
-.input {
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,.25);
-  color:var(--text);
-  font-size:13px;
+.nv-navlink:hover{
+  color: #fff;
+  background: rgba(0,0,0,.24);
 }
 
 /* =========================
    HERO
 ========================= */
-.hero{
+.nv-hero{
   margin-top:18px;
   display:grid;
   grid-template-columns: 1.2fr .8fr;
@@ -197,153 +148,128 @@ body {
   overflow:hidden;
 }
 
-.hero-title{
+.nv-hero-title{
   margin:10px 0 10px;
   font-size:34px;
-  line-height:1.08
+  line-height:1.08;
 }
 
-.hero-text{
+.nv-hero-text{
   margin:0 0 16px;
-  color:var(--muted);
-  max-width:58ch
+  color: rgba(255,255,255,.82);
+  max-width:58ch;
 }
 
-.hero-actions{
+.nv-hero-actions{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
-  margin-bottom:16px
+  margin-bottom:16px;
 }
 
-.badge{
+/* Badge (sin pisar .badge Bootstrap) */
+.nv-badge{
   display:inline-flex;
   align-items:center;
   gap:10px;
   padding:8px 10px;
   border-radius:999px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.18);
   font-size:12px;
-  color:var(--muted);
-  font-weight:800;
+  color: rgba(255,255,255,.82);
+  font-weight:900;
 }
-
-.badge .dot{
+.nv-badge-dot{
   width:8px;
   height:8px;
   border-radius:999px;
-  background:linear-gradient(180deg, #ef4444, #22c55e);
-  box-shadow:0 0 16px rgba(239,68,68,.35);
+  background: linear-gradient(180deg, #ef4444, #22c55e);
+  box-shadow: 0 0 16px rgba(239,68,68,.35);
 }
 
-.hero-kpis{
+.nv-kpis{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
   gap:10px;
-  margin-top:8px
+  margin-top:8px;
 }
-
-.kpi{
+.nv-kpi{
   padding:12px;
   border-radius:16px;
-  border:1px solid var(--border);
-  background:rgba(0,0,0,.22)
+  border:1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
 }
+.nv-kpi-title{ font-size:12px; color: rgba(255,255,255,.78); font-weight:900; }
+.nv-kpi-value{ font-size:16px; font-weight:950; margin-top:6px; color:#fff; }
+.nv-kpi-sub{ font-size:12px; color: rgba(255,255,255,.78); margin-top:4px; }
 
-.kpi-title{
-  font-size:12px;
-  color:var(--muted);
-  font-weight:800
-}
+/* Hero right */
+.nv-hero-right{ position:relative; }
 
-.kpi-value{
-  font-size:16px;
-  font-weight:900;
-  margin-top:6px
-}
-
-.kpi-sub{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:4px
-}
-
-/* =========================
-   HERO RIGHT CARD
-========================= */
-.hero-right{position:relative}
-
-.hero-card{
-  border:1px solid var(--border);
-  background:rgba(0,0,0,.25);
+.nv-hero-card{
+  border:1px solid rgba(255,255,255,.16);
+  background: rgba(0,0,0,.18);
   border-radius:18px;
   padding:14px;
+  color: #fff;
 }
 
-.hero-card-top{
+.nv-hero-card-top{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:10px
+  gap:10px;
 }
+.nv-hero-card-title{ font-weight:950; }
 
-.hero-card-title{font-weight:900}
-
-.pill{
+.nv-pill{
   padding:6px 10px;
   border-radius:999px;
   font-size:12px;
-  font-weight:800;
-  background:rgba(239,68,68,.25);
-  border:1px solid rgba(239,68,68,.5);
+  font-weight:900;
+  background: rgba(239,68,68,.22);
+  border:1px solid rgba(239,68,68,.45);
 }
 
-.hero-product{
+.nv-hero-product{
   display:flex;
   gap:12px;
   align-items:center;
-  margin-top:14px
+  margin-top:14px;
 }
-
-.hero-product-icon{
+.nv-hero-product-icon{
   width:44px;
   height:44px;
   border-radius:14px;
   display:grid;
   place-items:center;
-  background:linear-gradient(180deg, rgba(239,68,68,.3), rgba(34,197,94,.2));
-  border:1px solid var(--border);
+  background: linear-gradient(180deg, rgba(239,68,68,.25), rgba(34,197,94,.18));
+  border:1px solid rgba(255,255,255,.16);
 }
+.nv-hero-product-name{ font-weight:950; }
+.nv-hero-product-desc{ font-size:12px; color: rgba(255,255,255,.78); margin-top:2px; }
+.nv-hero-note{ margin-top:14px; color: rgba(255,255,255,.78); font-size:12px; }
 
-.hero-product-name{font-weight:900}
-.hero-product-desc{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:2px
-}
-
-.hero-card-note{margin-top:14px}
-
-.hero-glow{
+.nv-hero-glow{
   position:absolute;
   inset:-40px -40px auto auto;
   width:240px;
   height:240px;
   border-radius:999px;
   background:
-    radial-gradient(circle at 30% 30%, rgba(239,68,68,.28), transparent 60%),
-    radial-gradient(circle at 60% 60%, rgba(34,197,94,.22), transparent 62%);
-  filter:blur(8px);
+    radial-gradient(circle at 30% 30%, rgba(239,68,68,.22), transparent 60%),
+    radial-gradient(circle at 60% 60%, rgba(34,197,94,.18), transparent 62%);
+  filter: blur(10px);
   pointer-events:none;
 }
 
 /* =========================
-   SECTIONS / GRID
+   SECCIONES / GRID
 ========================= */
-.section{margin-top:22px}
+.nv-section{ margin-top:22px; }
 
-.section-head{
+.nv-section-head{
   display:flex;
   justify-content:space-between;
   align-items:flex-end;
@@ -352,106 +278,55 @@ body {
   margin-bottom:10px;
 }
 
-.filters{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-  min-width:260px
+/* Inputs sin pisar .form-control de Bootstrap */
+.nv-input{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.16);
+  color: #fff;
+  font-size:13px;
 }
+.nv-input::placeholder{ color: rgba(255,255,255,.70); }
 
-.grid-cards{
+.nv-grid{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
-  gap:12px;
-}
-
-.skeleton-card,
-.empty-card{
-  color:var(--muted);
-  text-align:center;
+  gap:14px;
 }
 
 /* =========================
-   CALLOUT
+   CARDS estilo tienda
 ========================= */
-.callout{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.callout-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.divider{
-  height:1px;
-  background:var(--border);
-  margin:10px 0;
-}
-
-/* =========================
-   TEXT HELPERS
-========================= */
-.h1 { font-size:26px; margin:0 }
-.muted { color:var(--muted) }
-.small { font-size:12px }
-
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 980px){
-  .hero{grid-template-columns:1fr}
-  .hero-kpis{grid-template-columns:1fr}
-  .grid-cards{grid-template-columns:1fr}
-}
-
-/* ===== CARDS estilo tienda (más “zip”) ===== */
-.grid-cards{ gap:14px }
-
-.product-card, .offer-card{
+.nv-product-card,
+.nv-offer-card{
   border-radius:18px;
   border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.78);
+  background: var(--nv-card-strong);
   box-shadow: 0 10px 22px rgba(0,0,0,.10);
   overflow:hidden;
   transition: transform .18s ease, box-shadow .18s ease;
 }
-
-.product-card:hover, .offer-card:hover{
+.nv-product-card:hover,
+.nv-offer-card:hover{
   transform: translateY(-3px);
   box-shadow: 0 14px 30px rgba(0,0,0,.14);
 }
 
-.card-media{
-  height: 140px;
+.nv-card-media{
+  height: 150px;
   background:
-    radial-gradient(circle at 20% 20%, rgba(200,102,56,.28), transparent 55%),
-    radial-gradient(circle at 80% 30%, rgba(111,160,132,.22), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(200,102,56,.22), transparent 55%),
+    radial-gradient(circle at 80% 30%, rgba(111,160,132,.18), transparent 55%),
     linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,.0));
   border-bottom: 1px solid rgba(0,0,0,.08);
 }
 
-.card-body{
-  padding: 14px;
-}
+.nv-card-body{ padding: 14px; }
+.nv-card-title{ font-weight: 950; font-size: 16px; margin: 2px 0 6px; }
+.nv-card-desc{ font-size: 12px; color: var(--nv-muted); min-height: 34px; }
 
-.card-title{
-  font-weight: 950;
-  font-size: 16px;
-  margin: 2px 0 6px;
-}
-
-.card-desc{
-  font-size: 12px;
-  color: var(--muted);
-  min-height: 34px;
-}
-
-.card-meta{
+.nv-card-meta{
   margin-top: 12px;
   display:flex;
   justify-content: space-between;
@@ -459,43 +334,50 @@ body {
   gap:10px;
 }
 
-.price{
-  font-weight: 950;
-  font-size: 15px;
-}
+.nv-price{ font-weight: 950; font-size: 15px; }
 
-.tag{
+.nv-tag{
   font-size:12px;
   font-weight:900;
   padding:6px 10px;
   border-radius:999px;
   border:1px solid rgba(0,0,0,.10);
   background: rgba(255,255,255,.55);
-  color: rgba(47,38,34,.90);
+  color: rgba(47,38,34,.92);
 }
 
+/* =========================
+   CALLOUT
+========================= */
+.nv-callout{ display:flex; flex-direction:column; gap:10px; }
+.nv-callout-actions{ display:flex; gap:10px; flex-wrap:wrap; }
 
-/* ===== AUTH ===== */
-.auth-card{
-  max-width: 520px;
-  margin: 32px auto 0;
+.nv-divider{
+  height:1px;
+  background: rgba(255,255,255,.20);
+  margin:10px 0;
 }
 
-.auth-form{
-  margin-top: 14px;
-  display: grid;
-  gap: 12px;
+/* =========================
+   FOOTER / HELPERS
+========================= */
+.nv-footer{
+  margin-top: 32px;
+  text-align: center;
+  color: rgba(255,255,255,.82);
+  font-size: 12px;
 }
 
-.auth-label{
-  display: grid;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-}
+/* Títulos */
+.nv-h1 { font-size:26px; margin:0; color:#fff; }
+.nv-muted { color: rgba(255,255,255,.78); }
+.nv-small { font-size:12px; }
 
-.auth-msg{
-  margin-top: 6px;
-  min-height: 16px;
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 980px){
+  .nv-hero{ grid-template-columns:1fr; }
+  .nv-kpis{ grid-template-columns:1fr; }
+  .nv-grid{ grid-template-columns:1fr; }
 }
