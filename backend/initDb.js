@@ -1,6 +1,9 @@
-import bcrypt from "bcrypt";
+const bcrypt = require("bcrypt");
 
-export async function initDb(pool) {
+async function initDb(pool) {
+  // =========================
+  // USUARIOS
+  // =========================
   await pool.query(`
     CREATE TABLE IF NOT EXISTS usuarios (
       id SERIAL PRIMARY KEY,
@@ -13,20 +16,26 @@ export async function initDb(pool) {
     );
   `);
 
+  // =========================
+  // PRODUCTOS
+  // =========================
   await pool.query(`
     CREATE TABLE IF NOT EXISTS productos (
-  id SERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  descripcion TEXT,
-  precio NUMERIC(10,2) NOT NULL,
-  imagen_url TEXT,
-  categoria TEXT NOT NULL,
-  stock INT NOT NULL DEFAULT 0,
-  activo BOOLEAN NOT NULL DEFAULT TRUE,
-  creado_en TIMESTAMP NOT NULL DEFAULT NOW()
-  );
+      id SERIAL PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      descripcion TEXT,
+      precio NUMERIC(10,2) NOT NULL,
+      imagen_url TEXT,
+      categoria TEXT NOT NULL,
+      stock INT NOT NULL DEFAULT 0,
+      activo BOOLEAN NOT NULL DEFAULT TRUE,
+      creado_en TIMESTAMP NOT NULL DEFAULT NOW()
+    );
   `);
 
+  // =========================
+  // OFERTAS
+  // =========================
   await pool.query(`
     CREATE TABLE IF NOT EXISTS ofertas (
       id SERIAL PRIMARY KEY,
@@ -40,6 +49,9 @@ export async function initDb(pool) {
     );
   `);
 
+  // =========================
+  // PEDIDOS
+  // =========================
   await pool.query(`
     CREATE TABLE IF NOT EXISTS pedidos (
       id SERIAL PRIMARY KEY,
@@ -54,6 +66,9 @@ export async function initDb(pool) {
     );
   `);
 
+  // =========================
+  // PEDIDO ITEMS
+  // =========================
   await pool.query(`
     CREATE TABLE IF NOT EXISTS pedido_items (
       id SERIAL PRIMARY KEY,
@@ -64,6 +79,9 @@ export async function initDb(pool) {
     );
   `);
 
+  // =========================
+  // ADMIN POR DEFECTO
+  // =========================
   await ensureAdmin(pool);
 }
 
@@ -71,9 +89,11 @@ async function ensureAdmin(pool) {
   const email = process.env.ADMIN_EMAIL || "admin@webnavidad.com";
   const password = process.env.ADMIN_PASSWORD || "admin123";
 
-  const r = await pool.query("SELECT id FROM usuarios WHERE email = $1", [
-    email,
-  ]);
+  const r = await pool.query(
+    "SELECT id FROM usuarios WHERE email = $1",
+    [email]
+  );
+
   if (r.rowCount > 0) return;
 
   const hash = await bcrypt.hash(password, 10);
@@ -86,3 +106,5 @@ async function ensureAdmin(pool) {
 
   console.log("✅ Admin creado:", email);
 }
+
+module.exports = { initDb };

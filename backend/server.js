@@ -17,7 +17,11 @@ const FRONTEND_DIR = path.join(__dirname, "../frontend");
 // ====================
 app.use(cors());
 app.use(express.json());
+
+// Frontend estático (opcional si lo sirves desde backend)
 app.use(express.static(FRONTEND_DIR));
+
+// Sirve imágenes subidas
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ====================
@@ -44,7 +48,7 @@ const storage = multer.diskStorage({
 
 const uploadProducto = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
       return cb(new Error("Solo se permiten imágenes"));
@@ -55,7 +59,7 @@ const uploadProducto = multer({
 
 function multerErrorHandler(err, req, res, next) {
   if (!err) return next();
-  return res.status(400).json({ error: err.message });
+  return res.status(400).json({ error: err.message || "Error subiendo archivo" });
 }
 
 // ====================
@@ -64,9 +68,13 @@ function multerErrorHandler(err, req, res, next) {
 function requireAuth(req, res, next) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+
   if (!token) return res.status(401).json({ error: "No autenticado" });
 
   try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: "JWT_SECRET no configurado" });
+    }
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch {
@@ -97,7 +105,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     const r = await pool.query(
-      "SELECT * FROM usuarios WHERE email = $1",
+      "SELECT id, nombre, email, password_hash, rol, activo FROM usuarios WHERE email = $1",
       [email.trim().toLowerCase()]
     );
 
@@ -108,6 +116,10 @@ app.post("/api/auth/login", async (req, res) => {
 
     const ok = await bcrypt.compare(password, u.password_hash);
     if (!ok) return res.status(401).json({ error: "Credenciales inválidas" });
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: "JWT_SECRET no configurado en el servidor" });
+    }
 
     const token = jwt.sign(
       { id: u.id, rol: u.rol, email: u.email, nombre: u.nombre },
@@ -121,7 +133,7 @@ app.post("/api/auth/login", async (req, res) => {
       user: { id: u.id, nombre: u.nombre, email: u.email, rol: u.rol },
     });
   } catch (e) {
-    console.error(e);
+    console.error("Error login:", e);
     res.status(500).json({ error: "Error en login" });
   }
 });
@@ -136,6 +148,7 @@ app.get("/api/productos", async (_, res) => {
     );
     res.json(r.rows);
   } catch (e) {
+    console.error("Error GET /api/productos:", e);
     res.status(500).json({ error: "Error cargando productos" });
   }
 });
@@ -145,14 +158,16 @@ app.get("/api/productos", async (_, res) => {
 // ====================
 app.get("/api/admin/productos", requireAuth, requireAdmin, async (_, res) => {
   try {
+    // incluye activos e inactivos
     const r = await pool.query("SELECT * FROM productos ORDER BY id DESC");
     res.json(r.rows);
   } catch (e) {
+    console.error("Error GET /api/admin/productos:", e);
     res.status(500).json({ error: "Error cargando productos admin" });
   }
 });
 
-// Crear producto
+// Crear producto (ADMIN + multipart)
 app.post(
   "/api/productos",
   requireAuth,
@@ -161,51 +176,79 @@ app.post(
   multerErrorHandler,
   async (req, res) => {
     try {
-      const { nombre, descripcion, precio, categoria, stock } = req.body;
+      const { nombre, descripcion, precio, categoria, stock } = req.body || {};
 
       if (!nombre || !precio || !categoria) {
         return res.status(400).json({ error: "nombre, precio y categoria obligatorios" });
       }
 
       const imagenUrl = req.file ? `/uploads/productos/${req.file.filename}` : null;
-      const stockNum = Number.isFinite(Number(stock)) ? Number(stock) : 0;
+
+      const precioNum = Number(precio);
+      if (!Number.isFinite(precioNum) || precioNum < 0) {
+        return res.status(400).json({ error: "Precio inválido" });
+      }
+
+      const stockNum = Number(stock);
+      const stockFinal = Number.isFinite(stockNum) && stockNum >= 0 ? Math.floor(stockNum) : 0;
 
       const r = await pool.query(
         `INSERT INTO productos
          (nombre, descripcion, precio, imagen_url, categoria, stock, activo)
          VALUES ($1,$2,$3,$4,$5,$6,TRUE)
          RETURNING *`,
-        [nombre, descripcion || null, precio, imagenUrl, categoria, stockNum]
+        [nombre, descripcion || null, precioNum, imagenUrl, categoria, stockFinal]
       );
 
       res.status(201).json({ ok: true, producto: r.rows[0] });
     } catch (e) {
-      console.error(e);
+      console.error("Error POST /api/productos:", e);
       res.status(500).json({ error: "Error creando producto" });
     }
   }
 );
 
-// Eliminar producto
+// Actualizar stock (ADMIN)
+app.patch("/api/productos/:id/stock", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { stock } = req.body || {};
+
+    if (!Number.isInteger(id)) return res.status(400).json({ error: "ID inválido" });
+
+    const s = Number(stock);
+    if (!Number.isFinite(s) || s < 0) return res.status(400).json({ error: "Stock inválido" });
+
+    const r = await pool.query(
+      "UPDATE productos SET stock = $1 WHERE id = $2 RETURNING *",
+      [Math.floor(s), id]
+    );
+
+    if (!r.rowCount) return res.status(404).json({ error: "Producto no encontrado" });
+
+    res.json({ ok: true, producto: r.rows[0] });
+  } catch (e) {
+    console.error("Error PATCH /api/productos/:id/stock:", e);
+    res.status(500).json({ error: "Error actualizando stock" });
+  }
+});
+
+// “Eliminar” producto (soft delete: activo=false)
 app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id)) {
-      return res.status(400).json({ error: "ID inválido" });
-    }
+    if (!Number.isInteger(id)) return res.status(400).json({ error: "ID inválido" });
 
     const r = await pool.query(
-      "DELETE FROM productos WHERE id = $1 RETURNING id",
+      "UPDATE productos SET activo = false WHERE id = $1 RETURNING id",
       [id]
     );
 
-    if (!r.rowCount) {
-      return res.status(404).json({ error: "Producto no encontrado" });
-    }
+    if (!r.rowCount) return res.status(404).json({ error: "Producto no encontrado" });
 
     res.json({ ok: true, deletedId: r.rows[0].id });
   } catch (e) {
-    console.error(e);
+    console.error("Error DELETE /api/productos/:id:", e);
     res.status(500).json({ error: "Error eliminando producto" });
   }
 });
@@ -214,7 +257,7 @@ app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => 
 // PEDIDOS (ADMIN)
 // ====================
 app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
-  const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body;
+  const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
 
   if (!nombreCliente || !telefono || !Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: "Datos de pedido incompletos" });
@@ -233,6 +276,7 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
     );
 
     let total = 0;
+
     for (const it of items) {
       const pr = await client.query(
         "SELECT precio FROM productos WHERE id=$1 AND activo=true",
@@ -240,26 +284,23 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
       );
       if (!pr.rowCount) throw new Error("Producto inválido");
 
-      total += pr.rows[0].precio * it.cantidad;
+      const precioUnit = Number(pr.rows[0].precio);
+      total += precioUnit * it.cantidad;
 
       await client.query(
-        `INSERT INTO pedido_items
-         (pedido_id, producto_id, cantidad, precio_unitario)
+        `INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario)
          VALUES ($1,$2,$3,$4)`,
-        [p.rows[0].id, it.productoId, it.cantidad, pr.rows[0].precio]
+        [p.rows[0].id, it.productoId, it.cantidad, precioUnit]
       );
     }
 
-    await client.query("UPDATE pedidos SET total=$1 WHERE id=$2", [
-      total,
-      p.rows[0].id,
-    ]);
-
+    await client.query("UPDATE pedidos SET total=$1 WHERE id=$2", [total, p.rows[0].id]);
     await client.query("COMMIT");
+
     res.json({ ok: true, pedidoId: p.rows[0].id, total });
   } catch (e) {
     await client.query("ROLLBACK");
-    console.error(e);
+    console.error("Error POST /api/pedidos:", e);
     res.status(500).json({ error: "Error creando pedido" });
   } finally {
     client.release();
@@ -278,12 +319,19 @@ app.use((_, res) => {
 });
 
 // ====================
-// START
+// START (init + parche schema)
 // ====================
 (async () => {
   try {
     await initDb(pool);
-    console.log("✅ BD inicializada");
+
+    // Asegurar columna stock (si tu tabla se creó sin stock antes)
+    await pool.query(`
+      ALTER TABLE productos
+      ADD COLUMN IF NOT EXISTS stock INTEGER NOT NULL DEFAULT 0;
+    `);
+
+    console.log("✅ BD inicializada y esquema actualizado (stock)");
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
