@@ -150,3 +150,26 @@ sortSelect?.addEventListener("change", applyFilters);
 
 loadProductos();
 loadOfertas();
+
+(() => {
+  const adminNav = document.getElementById("adminNav");
+  if (!adminNav) return;
+
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    adminNav.innerHTML = `
+      <a class="btn ghost small-btn" href="./admin.html">Panel</a>
+      <button id="logoutBtn" class="btn ghost small-btn">Salir</button>
+    `;
+
+    document.getElementById("logoutBtn").onclick = () => {
+      localStorage.removeItem("token");
+      window.location.reload();
+    };
+  } else {
+    adminNav.innerHTML = `
+      <a class="btn ghost small-btn" href="./login.html">Admin</a>
+    `;
+  }
+})();

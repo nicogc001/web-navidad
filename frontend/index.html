@@ -25,7 +25,9 @@
           <a class="nav-link" href="#productos">Productos</a>
           <a class="nav-link" href="#ofertas">Ofertas</a>
           <a class="nav-link" href="#encargos">Encargos</a>
-          <a class="btn ghost small-btn" href="./login.html">Admin</a>
+
+          <!-- Dinámico: Admin / Panel + Salir -->
+          <span id="adminNav"></span>
         </nav>
       </header>
 
@@ -163,8 +165,32 @@
     </div>
   </div>
 
-  <script src="./assets/js/config.js"></script>
-  <script src="./assets/js/index.js"></script>
-  <script src="./assets/js/snow.js"></script>
+  <script defer src="./assets/js/config.js"></script>
+  <script defer src="./assets/js/index.js"></script>
+  <script defer src="./assets/js/snow.js"></script>
+
+  <!-- Admin / Panel dinámico -->
+  <script defer>
+    (() => {
+      const adminNav = document.getElementById("adminNav");
+      if (!adminNav) return;
+
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        adminNav.innerHTML = `
+          <a class="btn ghost small-btn" href="./admin.html">Panel</a>
+          <button id="logoutBtn" class="btn ghost small-btn" type="button">Salir</button>
+        `;
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          localStorage.removeItem("token");
+          window.location.reload();
+        });
+      } else {
+        adminNav.innerHTML = `<a class="btn ghost small-btn" href="./login.html">Admin</a>`;
+      }
+    })();
+  </script>
 </body>
 </html>

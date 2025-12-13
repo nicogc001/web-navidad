@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin | Login</title>
+  <link rel="stylesheet" href="./assets/css/styles.css" />
+</head>
+
+<body>
+  <canvas id="snow"></canvas>
+
+  <div class="bg">
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-badge">🎄</div>
+          <div>
+            <div class="brand-title">Web Navidad</div>
+            <div class="brand-subtitle">Zona Administrador</div>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a class="btn ghost small-btn" href="./index.html">Volver</a>
+        </nav>
+      </header>
+
+      <main class="card auth-card">
+        <h1 class="h1">Acceso administrador</h1>
+        <p class="muted">Introduce tus credenciales para gestionar pedidos.</p>
+
+        <form id="loginForm" class="auth-form">
+          <label class="auth-label">
+            Email
+            <input id="email" class="input" type="email" autocomplete="username" required placeholder="admin@tuweb.com" />
+          </label>
+
+          <label class="auth-label">
+            Contraseña
+            <input id="password" class="input" type="password" autocomplete="current-password" required placeholder="••••••••" />
+          </label>
+
+          <button id="loginBtn" class="btn primary" type="submit">Entrar</button>
+
+          <div id="loginMsg" class="auth-msg muted small" aria-live="polite"></div>
+        </form>
+      </main>
+
+      <footer class="footer">
+        <span class="muted small">© 2025 Web Navidad</span>
+      </footer>
+    </div>
+  </div>
+
+  <script defer src="./assets/js/config.js"></script>
+  <script defer src="./assets/js/login.js"></script>
+  <script defer src="./assets/js/snow.js"></script>
+</body>
+</html>
