@@ -2,23 +2,24 @@
    VARIABLES BASE
 ========================= */
 :root {
-  /* Fondos pastel cálidos (más oscuros) */
-  --bg-1: #f3e3d6;   /* crema tostado */
-  --bg-2: #e9cfc1;   /* naranja pastel */
-  --bg-3: #e4d9c9;   /* beige cálido */
+  /* Fondos pastel cálidos – un punto más oscuro */
+  --bg-1: #e6cbb8;   /* crema tostado */
+  --bg-2: #ddb49c;   /* naranja pastel más profundo */
+  --bg-3: #d6c3ae;   /* beige cálido oscuro */
 
   /* Texto */
-  --text: #3b2f2a;   /* marrón oscuro elegante */
-  --muted: #6b5a4e;
+  --text: #2f2622;   /* marrón más oscuro */
+  --muted: #5a4b41;
 
   /* UI */
-  --card: rgba(255,255,255,.78);
-  --border: rgba(0,0,0,.12);
+  --card: rgba(255,255,255,.75);
+  --border: rgba(0,0,0,.14);
 
   /* Acentos */
-  --primary: #d97745;   /* naranja navideño */
-  --secondary: #7fb38c; /* verde apagado */
+  --primary: #c86638;   /* naranja navideño más serio */
+  --secondary: #6fa084; /* verde apagado */
 }
+
 
 
 /* =========================
@@ -38,11 +39,12 @@ html, body {
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 20% 20%, rgba(217,119,69,.22), transparent 55%),
-    radial-gradient(circle at 80% 30%, rgba(127,179,140,.18), transparent 55%),
-    radial-gradient(circle at 50% 85%, rgba(243,227,214,.35), transparent 60%),
+    radial-gradient(circle at 18% 18%, rgba(200,102,56,.28), transparent 55%),
+    radial-gradient(circle at 82% 30%, rgba(111,160,132,.22), transparent 55%),
+    radial-gradient(circle at 50% 88%, rgba(214,195,174,.45), transparent 60%),
     linear-gradient(180deg, var(--bg-1), var(--bg-3));
 }
+
 
 /* =========================
    SNOW CANVAS
