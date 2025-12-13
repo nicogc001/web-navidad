@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Web Navidad | Roscones, dulces y ofertas</title>
+  <link rel="stylesheet" href="./assets/css/styles.css" />
+</head>
+
+<body>
+  <canvas id="snow"></canvas>
+
+  <div class="bg">
+    <div class="container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-badge">🎄</div>
+          <div>
+            <div class="brand-title">Web Navidad</div>
+            <div class="brand-subtitle">Roscones · Dulces · Ofertas</div>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a class="nav-link" href="#productos">Productos</a>
+          <a class="nav-link" href="#ofertas">Ofertas</a>
+          <a class="nav-link" href="#encargos">Encargos</a>
+          <a class="btn ghost small-btn" href="./login.html">Admin</a>
+        </nav>
+      </header>
+
+      <!-- HERO -->
+      <main class="hero card">
+        <div class="hero-left">
+          <div class="badge">
+            <span class="dot"></span>
+            Temporada Navidad (13 dic · 6 ene)
+          </div>
+
+          <h1 class="hero-title">
+            Roscones de Reyes y dulces navideños<br/>
+            con acabado artesanal.
+          </h1>
+
+          <p class="hero-text">
+            Selección de roscones (clásico, nata, trufa), turrones, polvorones y packs.
+            Encargos por WhatsApp y recogida en tienda.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn primary" href="#productos">Ver productos</a>
+            <a class="btn" href="#ofertas">Ver ofertas</a>
+          </div>
+
+          <div class="hero-kpis">
+            <div class="kpi">
+              <div class="kpi-title">Producción diaria</div>
+              <div class="kpi-value">Limitada</div>
+              <div class="kpi-sub">Recomendamos reservar</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Recogida</div>
+              <div class="kpi-value">Rápida</div>
+              <div class="kpi-sub">Sin esperas innecesarias</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-title">Packs</div>
+              <div class="kpi-value">Ahorro</div>
+              <div class="kpi-sub">Ofertas activas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="hero-card">
+            <div class="hero-card-top">
+              <div class="hero-card-title">Recomendación</div>
+              <div class="pill">Top ventas</div>
+            </div>
+            <div class="hero-card-body">
+              <div class="hero-product">
+                <div class="hero-product-icon">👑</div>
+                <div>
+                  <div class="hero-product-name">Roscón relleno nata</div>
+                  <div class="hero-product-desc">Perfecto para Reyes</div>
+                </div>
+              </div>
+
+              <div class="hero-card-note muted small">
+                Nota: la disponibilidad puede variar según producción del día.
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-glow"></div>
+        </div>
+      </main>
+
+      <!-- PRODUCTOS -->
+      <section id="productos" class="section">
+        <div class="section-head">
+          <div>
+            <h2 class="h1">Productos navideños</h2>
+            <p class="muted">Cargados desde la API. Precios orientativos por unidad.</p>
+          </div>
+
+          <div class="filters">
+            <input id="searchInput" class="input" placeholder="Buscar (roscón, turrón...)" />
+            <select id="sortSelect" class="input">
+              <option value="default">Orden por defecto</option>
+              <option value="priceAsc">Precio: menor a mayor</option>
+              <option value="priceDesc">Precio: mayor a menor</option>
+              <option value="nameAsc">Nombre: A-Z</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="productosGrid" class="grid-cards">
+          <div class="card skeleton-card">Cargando productos…</div>
+        </div>
+      </section>
+
+      <!-- OFERTAS -->
+      <section id="ofertas" class="section">
+        <div class="section-head">
+          <div>
+            <h2 class="h1">Ofertas activas</h2>
+            <p class="muted">Packs y descuentos por temporada.</p>
+          </div>
+        </div>
+
+        <div id="ofertasGrid" class="grid-cards">
+          <div class="card skeleton-card">Cargando ofertas…</div>
+        </div>
+      </section>
+
+      <!-- ENCARGOS -->
+      <section id="encargos" class="section">
+        <div class="card callout">
+          <div>
+            <h2 class="h1">Encargos y reservas</h2>
+            <p class="muted">
+              Para asegurar disponibilidad, envíanos un WhatsApp con lo que necesitas y el día de recogida.
+            </p>
+          </div>
+
+          <div class="callout-actions">
+            <a id="whatsBtn" class="btn primary" href="#" rel="noopener">Encargar por WhatsApp</a>
+            <a class="btn" href="#productos">Volver a productos</a>
+          </div>
+
+          <div class="divider"></div>
+          <div class="small muted">
+            Consejo: indica “Roscón (tipo) + tamaño + fecha + nombre + teléfono”.
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span class="muted small">© 2025 Web Navidad</span>
+        <span class="muted small"> · API: <span id="apiUrl"></span></span>
+      </footer>
+    </div>
+  </div>
+
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/index.js"></script>
+  <script src="./assets/js/snow.js"></script>
+</body>
+</html>
