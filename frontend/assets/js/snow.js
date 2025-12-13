@@ -61,8 +61,12 @@
         ctx.beginPath();
         ctx.globalAlpha = f.o;
         ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.shadowColor = "rgba(0,0,0,0.15)";
+        ctx.shadowBlur = 4;
         ctx.fill();
+        ctx.shadowBlur = 0;
+
       }
   
       ctx.globalAlpha = 1;
