@@ -1,7 +1,13 @@
 {
-    "rewrites": [
-      { "source": "/", "destination": "/frontend/index.html" },
-      { "source": "/assets/(.*)", "destination": "/frontend/assets/$1" }
-    ]
-  }
-  
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "^/$", "dest": "/frontend/index.html" },
+    { "src": "^/assets/(.*)", "dest": "/frontend/assets/$1" }
+  ]
+}
