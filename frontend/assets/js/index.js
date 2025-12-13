@@ -130,7 +130,7 @@ async function loadOfertas() {
 }
 
 // WhatsApp (pon aquí vuestro número en formato internacional sin +)
-const WHATS_NUMBER = "918596711"; // <-- CAMBIAR
+const WHATS_NUMBER = "0034605978052"; // <-- CAMBIAR
 function openWhatsApp(message) {
   const url = `https://wa.me/${WHATS_NUMBER}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank", "noopener");
