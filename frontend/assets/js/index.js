@@ -1,175 +1,131 @@
-const API = window.APP_CONFIG?.API_BASE_URL;
+(() => {
+  const API = window.APP_CONFIG?.API_BASE_URL;
+  const productosGrid = document.getElementById("productosGrid");
+  const ofertasGrid = document.getElementById("ofertasGrid");
+  const apiUrlSpan = document.getElementById("apiUrl");
+  const searchInput = document.getElementById("searchInput");
+  const sortSelect = document.getElementById("sortSelect");
+  const whatsBtn = document.getElementById("whatsBtn");
 
-const grid = document.getElementById("productosGrid");
-const ofertasGrid = document.getElementById("ofertasGrid");
-const apiUrlEl = document.getElementById("apiUrl");
-if (apiUrlEl) apiUrlEl.textContent = API;
+  if (apiUrlSpan) apiUrlSpan.textContent = API || "(sin configurar)";
 
-const searchInput = document.getElementById("searchInput");
-const sortSelect = document.getElementById("sortSelect");
+  // WhatsApp (pon aquí tu número si quieres)
+  const WHATS_NUMBER = ""; // ej: "34600111222"
+  function buildWhatsLink() {
+    const text = encodeURIComponent("Hola! Quiero encargar un roscón/dulces. Fecha de recogida: _____. Nombre: _____. Tel: _____.");
+    if (!WHATS_NUMBER) return `https://wa.me/?text=${text}`;
+    return `https://wa.me/${WHATS_NUMBER}?text=${text}`;
+  }
+  if (whatsBtn) whatsBtn.href = buildWhatsLink();
 
-let productos = [];
+  let productos = [];
 
-function escapeHtml(str) {
-  return String(str ?? "").replace(/[&<>"']/g, (m) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  }[m]));
-}
-
-function formatEur(n) {
-  const num = Number(n);
-  if (Number.isNaN(num)) return "";
-  return `${num.toFixed(2)} €`;
-}
-
-function renderProductos(list) {
-  if (!grid) return;
-
-  if (!list.length) {
-    grid.innerHTML = `<div class="card empty-card">No hay productos disponibles ahora mismo.</div>`;
-    return;
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
   }
 
-  grid.innerHTML = list.map(p => `
-    <article class="card product-card">
-      <div class="product-top">
-        <div class="product-icon">🍰</div>
-        <div class="pill">${formatEur(p.precio)}</div>
-      </div>
-      <div class="product-title">${escapeHtml(p.nombre)}</div>
-      <div class="product-desc">${escapeHtml(p.descripcion || "Producto navideño artesanal.")}</div>
-      <div class="product-footer">
-        <span class="tag">${escapeHtml(p.categoria || "navidad")}</span>
-        <button class="btn small-btn" data-action="whats" data-name="${escapeHtml(p.nombre)}">
-          Reservar
-        </button>
-      </div>
-    </article>
-  `).join("");
+  function renderProductos(list) {
+    if (!productosGrid) return;
 
-  // Botón reservar por WhatsApp (por producto)
-  grid.querySelectorAll('button[data-action="whats"]').forEach(btn => {
-    btn.addEventListener("click", () => {
-      const name = btn.getAttribute("data-name");
-      openWhatsApp(`Hola, quiero reservar: ${name}. ¿Disponibilidad y fecha de recogida?`);
-    });
-  });
-}
-
-function applyFilters() {
-  const q = (searchInput?.value || "").trim().toLowerCase();
-  const sort = sortSelect?.value || "default";
-
-  let list = [...productos];
-
-  if (q) {
-    list = list.filter(p =>
-      (p.nombre || "").toLowerCase().includes(q) ||
-      (p.descripcion || "").toLowerCase().includes(q)
-    );
-  }
-
-  if (sort === "priceAsc") list.sort((a,b) => Number(a.precio) - Number(b.precio));
-  if (sort === "priceDesc") list.sort((a,b) => Number(b.precio) - Number(a.precio));
-  if (sort === "nameAsc") list.sort((a,b) => String(a.nombre).localeCompare(String(b.nombre)));
-
-  renderProductos(list);
-}
-
-async function loadProductos() {
-  try {
-    const res = await fetch(`${API}/api/productos?categoria=navidad`);
-    const data = await res.json();
-    productos = Array.isArray(data) ? data : [];
-    applyFilters();
-  } catch {
-    grid.innerHTML = `<div class="card empty-card">No se pudieron cargar los productos.</div>`;
-  }
-}
-
-async function loadOfertas() {
-  if (!ofertasGrid) return;
-
-  try {
-    const res = await fetch(`${API}/api/ofertas`);
-    const ofertas = await res.json();
-
-    if (!Array.isArray(ofertas) || !ofertas.length) {
-      ofertasGrid.innerHTML = `<div class="card empty-card">No hay ofertas activas ahora mismo.</div>`;
+    if (!list.length) {
+      productosGrid.innerHTML = `<div class="card empty-card">No hay productos disponibles</div>`;
       return;
     }
 
-    ofertasGrid.innerHTML = ofertas.map(o => `
-      <article class="card offer-card">
-        <div class="offer-top">
-          <div class="offer-icon">🎁</div>
-          <div class="pill">${o.descuento_pct ? `${Number(o.descuento_pct).toFixed(0)}%` : "Oferta"}</div>
+    productosGrid.innerHTML = list.map(p => {
+      const img = p.imagen_url ? `${API}${p.imagen_url}` : "";
+      const stockTxt = (p.stock ?? 0) > 0 ? `Stock: ${p.stock}` : `Sin stock`;
+
+      return `
+        <div class="product-card">
+          <div class="card-media" style="${img ? `background-image:url('${img}')` : ""}"></div>
+          <div class="card-body">
+            <div class="card-title">${esc(p.nombre)}</div>
+            <div class="card-desc">${esc(p.descripcion || "")}</div>
+            <div class="card-meta">
+              <div class="price">${Number(p.precio).toFixed(2)} €</div>
+              <span class="tag">${esc(p.categoria)}</span>
+            </div>
+            <div class="small muted" style="margin-top:8px">${esc(stockTxt)}</div>
+          </div>
         </div>
-        <div class="product-title">${escapeHtml(o.titulo)}</div>
-        <div class="product-desc">${escapeHtml(o.descripcion || "Oferta de temporada.")}</div>
-        <div class="product-footer">
-          <span class="tag">Navidad</span>
-          <button class="btn small-btn" data-offer="${escapeHtml(o.titulo)}">Solicitar</button>
+      `;
+    }).join("");
+  }
+
+  function applyFilters() {
+    let list = [...productos];
+
+    const q = (searchInput?.value || "").trim().toLowerCase();
+    if (q) {
+      list = list.filter(p =>
+        String(p.nombre || "").toLowerCase().includes(q) ||
+        String(p.descripcion || "").toLowerCase().includes(q) ||
+        String(p.categoria || "").toLowerCase().includes(q)
+      );
+    }
+
+    const sort = sortSelect?.value || "default";
+    if (sort === "priceAsc") list.sort((a,b)=>Number(a.precio)-Number(b.precio));
+    if (sort === "priceDesc") list.sort((a,b)=>Number(b.precio)-Number(a.precio));
+    if (sort === "nameAsc") list.sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre)));
+
+    renderProductos(list);
+  }
+
+  async function loadProductos() {
+    if (!productosGrid) return;
+    productosGrid.innerHTML = `<div class="card skeleton-card">Cargando productos…</div>`;
+
+    try {
+      const r = await fetch(`${API}/api/productos`);
+      const data = await r.json();
+      productos = Array.isArray(data) ? data : [];
+      applyFilters();
+    } catch (e) {
+      productosGrid.innerHTML = `<div class="card empty-card">Error cargando productos</div>`;
+    }
+  }
+
+  async function loadOfertas() {
+    if (!ofertasGrid) return;
+    ofertasGrid.innerHTML = `<div class="card skeleton-card">Cargando ofertas…</div>`;
+
+    try {
+      const r = await fetch(`${API}/api/ofertas`);
+      const data = await r.json();
+      const ofertas = Array.isArray(data) ? data : [];
+
+      if (!ofertas.length) {
+        ofertasGrid.innerHTML = `<div class="card empty-card">No hay ofertas activas</div>`;
+        return;
+      }
+
+      ofertasGrid.innerHTML = ofertas.map(o => `
+        <div class="offer-card">
+          <div class="card-body">
+            <div class="card-title">${esc(o.titulo)}</div>
+            <div class="card-desc">${esc(o.descripcion || "")}</div>
+            <div class="card-meta">
+              <div class="price">${o.descuento_pct ? `-${Number(o.descuento_pct).toFixed(0)}%` : "Oferta"}</div>
+              <span class="tag">Navidad</span>
+            </div>
+          </div>
         </div>
-      </article>
-    `).join("");
+      `).join("");
 
-    ofertasGrid.querySelectorAll("button[data-offer]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const title = btn.getAttribute("data-offer");
-        openWhatsApp(`Hola, me interesa la oferta: ${title}. ¿Detalles y disponibilidad?`);
-      });
-    });
-  } catch {
-    ofertasGrid.innerHTML = `<div class="card empty-card">No se pudieron cargar las ofertas.</div>`;
+    } catch (e) {
+      ofertasGrid.innerHTML = `<div class="card empty-card">Error cargando ofertas</div>`;
+    }
   }
-}
 
-// WhatsApp (pon aquí vuestro número en formato internacional sin +)
-const WHATS_NUMBER = "0034605978052"; // <-- CAMBIAR
-function openWhatsApp(message) {
-  const url = `https://wa.me/${WHATS_NUMBER}?text=${encodeURIComponent(message)}`;
-  window.open(url, "_blank", "noopener");
-}
+  // listeners
+  searchInput?.addEventListener("input", applyFilters);
+  sortSelect?.addEventListener("change", applyFilters);
 
-// Botón generals
-const whatsBtn = document.getElementById("whatsBtn");
-if (whatsBtn) {
-  whatsBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    openWhatsApp("Hola, quiero hacer un encargo de Navidad. ¿Disponibilidad y horarios de recogida?");
-  });
-}
-
-searchInput?.addEventListener("input", applyFilters);
-sortSelect?.addEventListener("change", applyFilters);
-
-loadProductos();
-loadOfertas();
-
-(() => {
-  const adminNav = document.getElementById("adminNav");
-  if (!adminNav) return;
-
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    adminNav.innerHTML = `
-      <a class="btn ghost small-btn" href="./admin.html">Panel</a>
-      <button id="logoutBtn" class="btn ghost small-btn">Salir</button>
-    `;
-
-    document.getElementById("logoutBtn").onclick = () => {
-      localStorage.removeItem("token");
-      window.location.reload();
-    };
-  } else {
-    adminNav.innerHTML = `
-      <a class="btn ghost small-btn" href="./login.html">Admin</a>
-    `;
-  }
+  // init
+  loadProductos();
+  loadOfertas();
 })();
