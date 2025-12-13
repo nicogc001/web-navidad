@@ -158,7 +158,6 @@ app.get("/api/productos", async (_, res) => {
 // ====================
 app.get("/api/admin/productos", requireAuth, requireAdmin, async (_, res) => {
   try {
-    // incluye activos e inactivos
     const r = await pool.query("SELECT * FROM productos ORDER BY id DESC");
     res.json(r.rows);
   } catch (e) {
@@ -233,7 +232,7 @@ app.patch("/api/productos/:id/stock", requireAuth, requireAdmin, async (req, res
   }
 });
 
-// “Eliminar” producto (soft delete: activo=false)
+// “Eliminar” producto (soft delete)
 app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -254,7 +253,7 @@ app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => 
 });
 
 // ====================
-// PEDIDOS (PÚBLICO) -> crea pedido y devuelve enlace WhatsApp
+// PEDIDOS (PÚBLICO) -> para WhatsApp (sin login)
 // ====================
 app.post("/api/pedidos/publico", async (req, res) => {
   const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
@@ -279,7 +278,7 @@ app.post("/api/pedidos/publico", async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    // 1) crear cabecera
+    // Cabecera (creado_por NULL)
     const pedidoRes = await client.query(
       `INSERT INTO pedidos (nombre_cliente, telefono, fecha_recogida, observaciones, estado, total, creado_por)
        VALUES ($1,$2,$3,$4,'pendiente',0,NULL)
@@ -289,7 +288,7 @@ app.post("/api/pedidos/publico", async (req, res) => {
 
     const pedidoId = pedidoRes.rows[0].id;
 
-    // 2) items y total desde DB (precio real)
+    // Items y total
     let total = 0;
     const lineas = [];
 
@@ -298,7 +297,7 @@ app.post("/api/pedidos/publico", async (req, res) => {
       const cantidad = Number(it.cantidad);
 
       const pr = await client.query(
-        `SELECT id, nombre, precio, categoria, stock, activo
+        `SELECT id, nombre, precio, stock, activo
          FROM productos
          WHERE id = $1`,
         [productoId]
@@ -308,7 +307,6 @@ app.post("/api/pedidos/publico", async (req, res) => {
       const p = pr.rows[0];
       if (!p.activo) throw new Error(`Producto inactivo (id=${productoId})`);
 
-      // Stock: si quieres bloquear pedidos con stock insuficiente:
       if (Number(p.stock) < cantidad) {
         throw new Error(`Stock insuficiente para "${p.nombre}" (stock=${p.stock})`);
       }
@@ -322,20 +320,18 @@ app.post("/api/pedidos/publico", async (req, res) => {
         [pedidoId, productoId, cantidad, precioUnitario]
       );
 
-      lineas.push({ nombre: p.nombre, cantidad, precioUnitario });
+      lineas.push({
+        productoId,
+        nombre: p.nombre,
+        cantidad,
+        precioUnitario
+      });
     }
 
-    // 3) actualizar total
     await client.query("UPDATE pedidos SET total = $1 WHERE id = $2", [total, pedidoId]);
 
     await client.query("COMMIT");
-
-    res.status(201).json({
-      ok: true,
-      pedidoId,
-      total,
-      lineas,
-    });
+    res.status(201).json({ ok: true, pedidoId, total, lineas });
   } catch (e) {
     await client.query("ROLLBACK");
     console.error("POST /api/pedidos/publico:", e);
@@ -346,7 +342,7 @@ app.post("/api/pedidos/publico", async (req, res) => {
 });
 
 // ====================
-// PEDIDOS (ADMIN)
+// PEDIDOS (ADMIN) opcional (si quieres que admin cree pedidos manualmente)
 // ====================
 app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
   const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
@@ -411,13 +407,13 @@ app.use((_, res) => {
 });
 
 // ====================
-// START (init + parche schema)
+// START
 // ====================
 (async () => {
   try {
     await initDb(pool);
 
-    // Asegurar columna stock (si tu tabla se creó sin stock antes)
+    // Parche: si tu BD antigua no tenía stock
     await pool.query(`
       ALTER TABLE productos
       ADD COLUMN IF NOT EXISTS stock INTEGER NOT NULL DEFAULT 0;
