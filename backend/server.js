@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const multer = require("multer");
+const fs = require("fs");
 
 const pool = require("./db");
 const { initDb } = require("./initDb");
@@ -26,11 +27,22 @@ app.use(express.static(FRONTEND_DIR));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --------------------
+// Ensure uploads dir exists (Render-safe)
+// --------------------
+const UPLOADS_ROOT = path.join(__dirname, "uploads");
+const UPLOADS_PRODUCTOS = path.join(UPLOADS_ROOT, "productos");
+
+// Render / Docker: si la carpeta no existe, multer rompe con ENOENT
+if (!fs.existsSync(UPLOADS_PRODUCTOS)) {
+  fs.mkdirSync(UPLOADS_PRODUCTOS, { recursive: true });
+}
+
+// --------------------
 // Upload config (productos)
 // --------------------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads/productos"));
+    cb(null, UPLOADS_PRODUCTOS);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -50,7 +62,7 @@ const uploadProducto = multer({
   },
 });
 
-// Manejo de errores de multer (opcional pero recomendable)
+// Manejo de errores de multer (recomendable)
 function multerErrorHandler(err, req, res, next) {
   if (!err) return next();
   return res.status(400).json({ error: err.message || "Error subiendo archivo" });
@@ -210,6 +222,7 @@ app.post(
         return res.status(400).json({ error: "nombre, precio y categoria son obligatorios" });
       }
 
+      // Guardar ruta pública (NO path del sistema)
       const imagenUrl = req.file ? `/uploads/productos/${req.file.filename}` : null;
 
       const r = await pool.query(
