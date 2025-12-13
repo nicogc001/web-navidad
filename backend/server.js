@@ -3,17 +3,58 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
+const multer = require("multer");
+
 const pool = require("./db");
 const { initDb } = require("./initDb");
 
-
 const app = express();
+
+// Si sirves el frontend desde el backend (opcional)
 const FRONTEND_DIR = path.join(__dirname, "../frontend");
 
+// --------------------
 // Middlewares
+// --------------------
 app.use(cors());
 app.use(express.json());
+
+// Sirve frontend estático (opcional)
 app.use(express.static(FRONTEND_DIR));
+
+// Sirve imágenes subidas
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// --------------------
+// Upload config (productos)
+// --------------------
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "uploads/productos"));
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const name = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, name + ext);
+  },
+});
+
+const uploadProducto = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Solo se permiten imágenes"));
+    }
+    cb(null, true);
+  },
+});
+
+// Manejo de errores de multer (opcional pero recomendable)
+function multerErrorHandler(err, req, res, next) {
+  if (!err) return next();
+  return res.status(400).json({ error: err.message || "Error subiendo archivo" });
+}
 
 // --------------------
 // Auth middleware
@@ -71,7 +112,7 @@ app.post("/api/auth/login", async (req, res) => {
 
     const r = await pool.query(
       "SELECT id, nombre, email, password_hash, rol, activo FROM usuarios WHERE email = $1",
-      [email]
+      [email.trim().toLowerCase()]
     );
 
     if (r.rowCount === 0) return res.status(401).json({ error: "Credenciales inválidas" });
@@ -103,13 +144,12 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// (Opcional) quién soy
 app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({ ok: true, user: req.user });
 });
 
 // --------------------
-// Productos y ofertas (pueden ser públicos)
+// Productos y ofertas (GET públicos)
 // --------------------
 app.get("/api/productos", async (req, res) => {
   try {
@@ -152,12 +192,47 @@ app.get("/api/ofertas", async (req, res) => {
 });
 
 // --------------------
+// Crear producto (ADMIN + subida de imagen)
+// Content-Type: multipart/form-data
+// Fields: nombre, descripcion, precio, categoria, imagen(file)
+// --------------------
+app.post(
+  "/api/productos",
+  requireAuth,
+  requireAdmin,
+  uploadProducto.single("imagen"),
+  multerErrorHandler,
+  async (req, res) => {
+    try {
+      const { nombre, descripcion, precio, categoria } = req.body || {};
+
+      if (!nombre || !precio || !categoria) {
+        return res.status(400).json({ error: "nombre, precio y categoria son obligatorios" });
+      }
+
+      const imagenUrl = req.file ? `/uploads/productos/${req.file.filename}` : null;
+
+      const r = await pool.query(
+        `INSERT INTO productos (nombre, descripcion, precio, imagen_url, categoria, activo)
+         VALUES ($1, $2, $3, $4, $5, TRUE)
+         RETURNING *`,
+        [nombre, descripcion || null, precio, imagenUrl, categoria]
+      );
+
+      res.status(201).json({ ok: true, producto: r.rows[0] });
+    } catch (e) {
+      console.error("Error POST /api/productos:", e);
+      res.status(500).json({ error: "Error creando producto" });
+    }
+  }
+);
+
+// --------------------
 // Pedidos (solo admin)
 // --------------------
 app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
   const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
 
-  // Validaciones mínimas
   if (!nombreCliente || !telefono) {
     return res.status(400).json({ error: "nombreCliente y telefono son obligatorios" });
   }
@@ -175,7 +250,6 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    // 1) Insert cabecera pedido (con creado_por)
     const pedidoRes = await client.query(
       `INSERT INTO pedidos (nombre_cliente, telefono, fecha_recogida, observaciones, creado_por)
        VALUES ($1, $2, $3, $4, $5)
@@ -185,7 +259,6 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
 
     const pedidoId = pedidoRes.rows[0].id;
 
-    // 2) Insert items (precio desde DB)
     let total = 0;
 
     for (const it of items) {
@@ -208,11 +281,9 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
       );
     }
 
-    // 3) Actualizar total
     await client.query("UPDATE pedidos SET total = $1 WHERE id = $2", [total, pedidoId]);
 
     await client.query("COMMIT");
-
     res.status(201).json({ ok: true, pedidoId, total });
   } catch (e) {
     await client.query("ROLLBACK");
@@ -223,7 +294,6 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// (Opcional recomendado) listar pedidos para el panel admin
 app.get("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
   try {
     const r = await pool.query(
@@ -239,28 +309,34 @@ app.get("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// --- Raíz simple ---
+// --------------------
+// Raíz (si sirves frontend desde backend)
+// --------------------
 app.get("/", (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "index.html"));
 });
 
-// --- 404 ---
+// --------------------
+// 404
+// --------------------
 app.use((req, res) => {
   res.status(404).json({ error: "Ruta no encontrada" });
 });
 
+// --------------------
 // Start
+// --------------------
 (async () => {
-    try {
-      await initDb(pool);
-      console.log("Tablas verificadas/creadas correctamente");
-  
-      const PORT = process.env.PORT || 3000;
-      app.listen(PORT, () => {
-        console.log(`API Navidad escuchando en ${PORT}`);
-      });
-    } catch (e) {
-      console.error("❌ Error inicializando BD:", e);
-      process.exit(1);
-    }
-  })();
+  try {
+    await initDb(pool);
+    console.log("✅ Tablas verificadas/creadas correctamente");
+
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`API Navidad escuchando en ${PORT}`);
+    });
+  } catch (e) {
+    console.error("❌ Error inicializando BD:", e);
+    process.exit(1);
+  }
+})();
