@@ -39,6 +39,10 @@
           <li class="nav-item"><a class="nav-link" href="#ofertas">Ofertas</a></li>
           <li class="nav-item"><a class="nav-link" href="#encargos">Encargos</a></li>
         </ul>
+        <button id="cartBtn" class="btn btn-outline-light btn-sm ms-2" type="button"
+          data-bs-toggle="offcanvas" data-bs-target="#cartCanvas">
+          Carrito <span id="cartCount" class="badge text-bg-light ms-1">0</span>
+        </button>
 
         <div class="d-flex ms-lg-3 mt-3 mt-lg-0">
           <a class="btn btn-outline-light btn-sm" href="./login.html">Admin</a>
@@ -205,6 +209,69 @@
       </div>
     </div>
   </section>
+  <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="cartCanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Tu carrito</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="cartItems" class="vstack gap-2"></div>
+  
+      <hr class="border-white-10 my-3" />
+  
+      <div class="d-flex justify-content-between">
+        <span class="text-muted">Total estimado</span>
+        <strong id="cartTotal">0,00 €</strong>
+      </div>
+  
+      <div class="d-grid gap-2 mt-3">
+        <button id="checkoutBtn" class="btn btn-primary">Pedir por WhatsApp</button>
+        <button id="clearCartBtn" class="btn btn-outline-light">Vaciar carrito</button>
+      </div>
+  
+      <div id="cartMsg" class="text-muted small mt-2"></div>
+    </div>
+  </div>
+  <div class="modal fade" id="pedidoModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content text-bg-dark">
+        <div class="modal-header">
+          <h5 class="modal-title">Datos para el encargo</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+  
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input id="pmNombre" class="form-control" placeholder="Tu nombre" />
+          </div>
+  
+          <div class="mb-2">
+            <label class="form-label">Teléfono</label>
+            <input id="pmTelefono" class="form-control" placeholder="Ej. 600123123" />
+          </div>
+  
+          <div class="mb-2">
+            <label class="form-label">Fecha de recogida</label>
+            <input id="pmFecha" type="date" class="form-control" />
+          </div>
+  
+          <div class="mb-2">
+            <label class="form-label">Observaciones</label>
+            <textarea id="pmObs" class="form-control" rows="3" placeholder="Sin azúcar, sin lactosa, hora aproximada..."></textarea>
+          </div>
+  
+          <div id="pmMsg" class="text-muted small"></div>
+        </div>
+  
+        <div class="modal-footer">
+          <button class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+          <button id="pmConfirm" class="btn btn-primary">Confirmar y abrir WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    
 
   <!-- Footer -->
   <footer class="py-4">

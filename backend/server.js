@@ -254,6 +254,98 @@ app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => 
 });
 
 // ====================
+// PEDIDOS (PÚBLICO) -> crea pedido y devuelve enlace WhatsApp
+// ====================
+app.post("/api/pedidos/publico", async (req, res) => {
+  const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
+
+  if (!nombreCliente || !telefono) {
+    return res.status(400).json({ error: "nombreCliente y telefono son obligatorios" });
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "El pedido debe incluir items" });
+  }
+
+  // Validación items
+  for (const it of items) {
+    const qty = Number(it?.cantidad);
+    const id = Number(it?.productoId);
+    if (!Number.isInteger(id) || !Number.isInteger(qty) || qty <= 0) {
+      return res.status(400).json({ error: "Item inválido (productoId/cantidad)" });
+    }
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1) crear cabecera
+    const pedidoRes = await client.query(
+      `INSERT INTO pedidos (nombre_cliente, telefono, fecha_recogida, observaciones, estado, total, creado_por)
+       VALUES ($1,$2,$3,$4,'pendiente',0,NULL)
+       RETURNING id`,
+      [nombreCliente, telefono, fechaRecogida || null, observaciones || null]
+    );
+
+    const pedidoId = pedidoRes.rows[0].id;
+
+    // 2) items y total desde DB (precio real)
+    let total = 0;
+    const lineas = [];
+
+    for (const it of items) {
+      const productoId = Number(it.productoId);
+      const cantidad = Number(it.cantidad);
+
+      const pr = await client.query(
+        `SELECT id, nombre, precio, categoria, stock, activo
+         FROM productos
+         WHERE id = $1`,
+        [productoId]
+      );
+
+      if (!pr.rowCount) throw new Error(`Producto no encontrado (id=${productoId})`);
+      const p = pr.rows[0];
+      if (!p.activo) throw new Error(`Producto inactivo (id=${productoId})`);
+
+      // Stock: si quieres bloquear pedidos con stock insuficiente:
+      if (Number(p.stock) < cantidad) {
+        throw new Error(`Stock insuficiente para "${p.nombre}" (stock=${p.stock})`);
+      }
+
+      const precioUnitario = Number(p.precio);
+      total += precioUnitario * cantidad;
+
+      await client.query(
+        `INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario)
+         VALUES ($1,$2,$3,$4)`,
+        [pedidoId, productoId, cantidad, precioUnitario]
+      );
+
+      lineas.push({ nombre: p.nombre, cantidad, precioUnitario });
+    }
+
+    // 3) actualizar total
+    await client.query("UPDATE pedidos SET total = $1 WHERE id = $2", [total, pedidoId]);
+
+    await client.query("COMMIT");
+
+    res.status(201).json({
+      ok: true,
+      pedidoId,
+      total,
+      lineas,
+    });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    console.error("POST /api/pedidos/publico:", e);
+    res.status(500).json({ error: e.message || "Error creando pedido" });
+  } finally {
+    client.release();
+  }
+});
+
+// ====================
 // PEDIDOS (ADMIN)
 // ====================
 app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
