@@ -542,6 +542,7 @@ if (pmConfirmBtn) {
           nombreCliente: nombre,
           telefono,
           fechaRecogida: fecha,
+          lugarRecogida: lugar,
           observaciones: obs,
           items: carritoItems, // tu carrito actual
         }),

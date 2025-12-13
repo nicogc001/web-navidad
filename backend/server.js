@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -15,10 +16,16 @@ const FRONTEND_DIR = path.join(__dirname, "../frontend");
 // ====================
 // Middlewares
 // ====================
-app.use(cors());
-app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+app.use(express.json({ limit: "1mb" }));
 
-// Frontend estático (opcional si lo sirves desde backend)
+// Frontend estático (si lo sirves desde backend)
 app.use(express.static(FRONTEND_DIR));
 
 // Sirve imágenes subidas
@@ -30,8 +37,10 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const UPLOADS_ROOT = path.join(__dirname, "uploads");
 const UPLOADS_PRODUCTOS = path.join(UPLOADS_ROOT, "productos");
 
-if (!fs.existsSync(UPLOADS_PRODUCTOS)) {
+try {
   fs.mkdirSync(UPLOADS_PRODUCTOS, { recursive: true });
+} catch (e) {
+  console.error("❌ No se pudo crear uploads/productos:", e);
 }
 
 // ====================
@@ -40,7 +49,7 @@ if (!fs.existsSync(UPLOADS_PRODUCTOS)) {
 const storage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, UPLOADS_PRODUCTOS),
   filename: (_, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname || "").toLowerCase();
     const name = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, name + ext);
   },
@@ -50,7 +59,7 @@ const uploadProducto = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
+    if (!file?.mimetype?.startsWith("image/")) {
       return cb(new Error("Solo se permiten imágenes"));
     }
     cb(null, true);
@@ -71,10 +80,11 @@ function requireAuth(req, res, next) {
 
   if (!token) return res.status(401).json({ error: "No autenticado" });
 
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: "JWT_SECRET no configurado" });
+  }
+
   try {
-    if (!process.env.JWT_SECRET) {
-      return res.status(500).json({ error: "JWT_SECRET no configurado" });
-    }
     req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch {
@@ -90,9 +100,23 @@ function requireAdmin(req, res, next) {
 }
 
 // ====================
-// Health
+// Health / DB check
 // ====================
 app.get("/api/health", (_, res) => res.json({ ok: true }));
+
+app.get("/api/db-check", async (_, res) => {
+  try {
+    const r = await pool.query("SELECT NOW() as now");
+    res.json({ ok: true, now: r.rows[0].now });
+  } catch (e) {
+    res.status(500).json({
+      ok: false,
+      message: e?.message,
+      code: e?.code,
+      detail: e?.detail,
+    });
+  }
+});
 
 // ====================
 // AUTH
@@ -138,6 +162,10 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+app.get("/api/auth/me", requireAuth, (req, res) => {
+  res.json({ ok: true, user: req.user });
+});
+
 // ====================
 // PRODUCTOS (PÚBLICO)
 // ====================
@@ -167,6 +195,7 @@ app.get("/api/admin/productos", requireAuth, requireAdmin, async (_, res) => {
 });
 
 // Crear producto (ADMIN + multipart)
+// Fields: nombre, descripcion, precio, categoria, stock, imagen(file)
 app.post(
   "/api/productos",
   requireAuth,
@@ -181,15 +210,16 @@ app.post(
         return res.status(400).json({ error: "nombre, precio y categoria obligatorios" });
       }
 
-      const imagenUrl = req.file ? `/uploads/productos/${req.file.filename}` : null;
-
       const precioNum = Number(precio);
       if (!Number.isFinite(precioNum) || precioNum < 0) {
         return res.status(400).json({ error: "Precio inválido" });
       }
 
       const stockNum = Number(stock);
-      const stockFinal = Number.isFinite(stockNum) && stockNum >= 0 ? Math.floor(stockNum) : 0;
+      const stockFinal =
+        Number.isFinite(stockNum) && stockNum >= 0 ? Math.floor(stockNum) : 0;
+
+      const imagenUrl = req.file ? `/uploads/productos/${req.file.filename}` : null;
 
       const r = await pool.query(
         `INSERT INTO productos
@@ -232,7 +262,7 @@ app.patch("/api/productos/:id/stock", requireAuth, requireAdmin, async (req, res
   }
 });
 
-// “Eliminar” producto (soft delete)
+// “Eliminar” producto (soft delete: activo=false)
 app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -253,23 +283,45 @@ app.delete("/api/productos/:id", requireAuth, requireAdmin, async (req, res) => 
 });
 
 // ====================
-// PEDIDOS (PÚBLICO) -> para WhatsApp (sin login)
+// OFERTAS (PÚBLICO)
+// ====================
+app.get("/api/ofertas", async (_, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT *
+      FROM ofertas
+      WHERE activo = true
+        AND (fecha_inicio IS NULL OR fecha_inicio <= CURRENT_DATE)
+        AND (fecha_fin IS NULL OR fecha_fin >= CURRENT_DATE)
+      ORDER BY id DESC
+    `);
+
+    res.json(r.rows);
+  } catch (e) {
+    console.error("Error GET /api/ofertas:", e);
+    res.status(500).json({ error: "Error cargando ofertas" });
+  }
+});
+
+// ====================
+// PEDIDOS (PÚBLICO) -> crea pedido y devuelve líneas para WhatsApp
 // ====================
 app.post("/api/pedidos/publico", async (req, res) => {
-  const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
+  const { nombreCliente, telefono, fechaRecogida, lugarRecogida, observaciones, items } =
+    req.body || {};
 
   if (!nombreCliente || !telefono) {
     return res.status(400).json({ error: "nombreCliente y telefono son obligatorios" });
   }
   if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: "El pedido debe incluir items" });
+    return res.status(400).json({ error: "El pedido debe incluir al menos un item" });
   }
 
   // Validación items
   for (const it of items) {
-    const qty = Number(it?.cantidad);
-    const id = Number(it?.productoId);
-    if (!Number.isInteger(id) || !Number.isInteger(qty) || qty <= 0) {
+    const productoId = Number(it?.productoId);
+    const cantidad = Number(it?.cantidad);
+    if (!Number.isInteger(productoId) || !Number.isInteger(cantidad) || cantidad <= 0) {
       return res.status(400).json({ error: "Item inválido (productoId/cantidad)" });
     }
   }
@@ -278,17 +330,22 @@ app.post("/api/pedidos/publico", async (req, res) => {
   try {
     await client.query("BEGIN");
 
-    // Cabecera (creado_por NULL)
+    // 1) Cabecera pedido (creado_por NULL porque es público)
     const pedidoRes = await client.query(
-      `INSERT INTO pedidos (nombre_cliente, telefono, fecha_recogida, observaciones, estado, total, creado_por)
-       VALUES ($1,$2,$3,$4,'pendiente',0,NULL)
+      `INSERT INTO pedidos (nombre_cliente, telefono, fecha_recogida, lugar_recogida, observaciones, estado, total, creado_por)
+       VALUES ($1,$2,$3,$4,$5,'pendiente',0,NULL)
        RETURNING id`,
-      [nombreCliente, telefono, fechaRecogida || null, observaciones || null]
+      [
+        nombreCliente,
+        telefono,
+        fechaRecogida || null,
+        lugarRecogida || null,
+        observaciones || null,
+      ]
     );
-
     const pedidoId = pedidoRes.rows[0].id;
 
-    // Items y total
+    // 2) Items + total desde DB (y validar stock)
     let total = 0;
     const lineas = [];
 
@@ -297,26 +354,23 @@ app.post("/api/pedidos/publico", async (req, res) => {
       const cantidad = Number(it.cantidad);
 
       const pr = await client.query(
-        `SELECT id, nombre, precio, stock, activo
-         FROM productos
-         WHERE id = $1`,
+        "SELECT id, nombre, precio, stock, activo FROM productos WHERE id = $1",
         [productoId]
       );
-
       if (!pr.rowCount) throw new Error(`Producto no encontrado (id=${productoId})`);
+
       const p = pr.rows[0];
       if (!p.activo) throw new Error(`Producto inactivo (id=${productoId})`);
 
-      if (Number(p.stock) < cantidad) {
-        throw new Error(`Stock insuficiente para "${p.nombre}" (stock=${p.stock})`);
-      }
+      const stock = Number(p.stock ?? 0);
+      if (stock < cantidad) throw new Error(`Sin stock suficiente para "${p.nombre}"`);
 
       const precioUnitario = Number(p.precio);
       total += precioUnitario * cantidad;
 
       await client.query(
         `INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario)
-         VALUES ($1,$2,$3,$4)`,
+         VALUES ($1, $2, $3, $4)`,
         [pedidoId, productoId, cantidad, precioUnitario]
       );
 
@@ -324,14 +378,22 @@ app.post("/api/pedidos/publico", async (req, res) => {
         productoId,
         nombre: p.nombre,
         cantidad,
-        precioUnitario
+        precioUnitario,
       });
     }
 
+    // 3) total
     await client.query("UPDATE pedidos SET total = $1 WHERE id = $2", [total, pedidoId]);
 
     await client.query("COMMIT");
-    res.status(201).json({ ok: true, pedidoId, total, lineas });
+
+    res.status(201).json({
+      ok: true,
+      pedidoId,
+      total,
+      lineas,
+      lugarRecogida: lugarRecogida || null,
+    });
   } catch (e) {
     await client.query("ROLLBACK");
     console.error("POST /api/pedidos/publico:", e);
@@ -342,10 +404,28 @@ app.post("/api/pedidos/publico", async (req, res) => {
 });
 
 // ====================
-// PEDIDOS (ADMIN) opcional (si quieres que admin cree pedidos manualmente)
+// PEDIDOS (ADMIN) - listado
 // ====================
+app.get("/api/admin/pedidos", requireAuth, requireAdmin, async (_, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT id, nombre_cliente, telefono, fecha_recogida, lugar_recogida, observaciones, estado, total, creado_en
+       FROM pedidos
+       ORDER BY id DESC
+       LIMIT 200`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    console.error("Error GET /api/admin/pedidos:", e);
+    res.status(500).json({ error: "Error cargando pedidos" });
+  }
+});
+
+// (Opcional) crear pedido desde admin (si lo usas en panel)
+// Mantengo por compatibilidad con tu backend previo
 app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
-  const { nombreCliente, telefono, fechaRecogida, observaciones, items } = req.body || {};
+  const { nombreCliente, telefono, fechaRecogida, lugarRecogida, observaciones, items } =
+    req.body || {};
 
   if (!nombreCliente || !telefono || !Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: "Datos de pedido incompletos" });
@@ -357,10 +437,17 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
 
     const p = await client.query(
       `INSERT INTO pedidos
-       (nombre_cliente, telefono, fecha_recogida, observaciones, creado_por)
-       VALUES ($1,$2,$3,$4,$5)
+       (nombre_cliente, telefono, fecha_recogida, lugar_recogida, observaciones, creado_por)
+       VALUES ($1,$2,$3,$4,$5,$6)
        RETURNING id`,
-      [nombreCliente, telefono, fechaRecogida || null, observaciones || null, req.user.id]
+      [
+        nombreCliente,
+        telefono,
+        fechaRecogida || null,
+        lugarRecogida || null,
+        observaciones || null,
+        req.user.id,
+      ]
     );
 
     let total = 0;
@@ -388,7 +475,7 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
     res.json({ ok: true, pedidoId: p.rows[0].id, total });
   } catch (e) {
     await client.query("ROLLBACK");
-    console.error("Error POST /api/pedidos:", e);
+    console.error("Error POST /api/pedidos (admin):", e);
     res.status(500).json({ error: "Error creando pedido" });
   } finally {
     client.release();
@@ -402,24 +489,30 @@ app.get("/", (_, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "index.html"));
 });
 
-app.use((_, res) => {
+app.use((req, res) => {
+  // Si quieres que el frontend maneje rutas, aquí podrías devolver index.html para GETs.
   res.status(404).json({ error: "Ruta no encontrada" });
 });
 
 // ====================
-// START
+// START (init + parches schema)
 // ====================
 (async () => {
   try {
     await initDb(pool);
 
-    // Parche: si tu BD antigua no tenía stock
+    // Parche schema por si la tabla se creó antes sin estas columnas
     await pool.query(`
       ALTER TABLE productos
       ADD COLUMN IF NOT EXISTS stock INTEGER NOT NULL DEFAULT 0;
     `);
 
-    console.log("✅ BD inicializada y esquema actualizado (stock)");
+    await pool.query(`
+      ALTER TABLE pedidos
+      ADD COLUMN IF NOT EXISTS lugar_recogida TEXT;
+    `);
+
+    console.log("✅ BD inicializada");
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

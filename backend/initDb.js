@@ -55,14 +55,15 @@ async function initDb(pool) {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS pedidos (
       id SERIAL PRIMARY KEY,
-      nombre_cliente TEXT NOT NULL,
-      telefono TEXT NOT NULL,
-      fecha_recogida DATE,
-      observaciones TEXT,
-      estado TEXT NOT NULL DEFAULT 'pendiente',
-      total NUMERIC(10,2) NOT NULL DEFAULT 0,
-      creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
-      creado_por INT REFERENCES usuarios(id)
+    nombre_cliente TEXT NOT NULL,
+    telefono TEXT NOT NULL,
+    fecha_recogida DATE,
+    lugar_recogida TEXT,
+    observaciones TEXT,
+    estado TEXT NOT NULL DEFAULT 'pendiente',
+    total NUMERIC(10,2) NOT NULL DEFAULT 0,
+    creado_en TIMESTAMP NOT NULL DEFAULT NOW(),
+    creado_por INT REFERENCES usuarios(id)
     );
   `);
 
