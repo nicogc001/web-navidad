@@ -15,15 +15,16 @@ export async function initDb(pool) {
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS productos (
-      id SERIAL PRIMARY KEY,
-      nombre TEXT NOT NULL,
-      descripcion TEXT,
-      precio NUMERIC(10,2) NOT NULL,
-      imagen_url TEXT,
-      categoria TEXT NOT NULL,
-      activo BOOLEAN NOT NULL DEFAULT TRUE,
-      creado_en TIMESTAMP NOT NULL DEFAULT NOW()
-    );
+  id SERIAL PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  descripcion TEXT,
+  precio NUMERIC(10,2) NOT NULL,
+  imagen_url TEXT,
+  categoria TEXT NOT NULL,
+  stock INT NOT NULL DEFAULT 0,
+  activo BOOLEAN NOT NULL DEFAULT TRUE,
+  creado_en TIMESTAMP NOT NULL DEFAULT NOW()
+  );
   `);
 
   await pool.query(`
@@ -70,7 +71,9 @@ async function ensureAdmin(pool) {
   const email = process.env.ADMIN_EMAIL || "admin@webnavidad.com";
   const password = process.env.ADMIN_PASSWORD || "admin123";
 
-  const r = await pool.query("SELECT id FROM usuarios WHERE email = $1", [email]);
+  const r = await pool.query("SELECT id FROM usuarios WHERE email = $1", [
+    email,
+  ]);
   if (r.rowCount > 0) return;
 
   const hash = await bcrypt.hash(password, 10);
