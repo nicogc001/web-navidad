@@ -225,7 +225,7 @@
         const disabled = stock <= 0 ? "disabled" : "";
 
         return `
-        <div class="col-6 col-md-6 col-lg-4">
+        <div class="col-6 col-md-4 col-lg-3">
           <div class="card card-glass h-100">
             ${
               img
