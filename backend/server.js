@@ -481,6 +481,85 @@ app.post("/api/pedidos", requireAuth, requireAdmin, async (req, res) => {
     client.release();
   }
 });
+// ====================
+// PEDIDOS (ADMIN) - listar con líneas
+// ====================
+app.get("/api/admin/pedidos", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const pedidosRes = await pool.query(`
+      SELECT *
+      FROM pedidos
+      ORDER BY id DESC
+      LIMIT 200
+    `);
+
+    const pedidos = pedidosRes.rows;
+
+    if (!pedidos.length) {
+      return res.json([]);
+    }
+
+    const ids = pedidos.map(p => p.id);
+
+    const itemsRes = await pool.query(`
+      SELECT
+        pi.pedido_id,
+        pi.cantidad,
+        pi.precio_unitario,
+        pr.nombre
+      FROM pedido_items pi
+      JOIN productos pr ON pr.id = pi.producto_id
+      WHERE pi.pedido_id = ANY($1)
+    `, [ids]);
+
+    const itemsPorPedido = {};
+    itemsRes.rows.forEach(it => {
+      if (!itemsPorPedido[it.pedido_id]) {
+        itemsPorPedido[it.pedido_id] = [];
+      }
+      itemsPorPedido[it.pedido_id].push(it);
+    });
+
+    const resultado = pedidos.map(p => ({
+      ...p,
+      items: itemsPorPedido[p.id] || []
+    }));
+
+    res.json(resultado);
+  } catch (e) {
+    console.error("GET /api/admin/pedidos", e);
+    res.status(500).json({ error: "Error cargando pedidos" });
+  }
+});
+
+// ====================
+// PEDIDOS (ADMIN) - cambiar estado
+// ====================
+app.patch("/api/pedidos/:id/estado", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { estado } = req.body;
+
+    const estadosValidos = ["pendiente", "confirmado", "entregado"];
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ error: "Estado inválido" });
+    }
+
+    const r = await pool.query(
+      "UPDATE pedidos SET estado = $1 WHERE id = $2 RETURNING *",
+      [estado, id]
+    );
+
+    if (!r.rowCount) {
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
+
+    res.json({ ok: true, pedido: r.rows[0] });
+  } catch (e) {
+    console.error("PATCH /api/pedidos/:id/estado", e);
+    res.status(500).json({ error: "Error actualizando pedido" });
+  }
+});
 
 // ====================
 // ROOT + 404
