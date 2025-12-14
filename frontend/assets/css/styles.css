@@ -2,403 +2,304 @@
    VARIABLES BASE
 ========================= */
 :root {
-  /* Fondos cálidos navideños (más oscuros para que se vean los copos) */
-  --nv-bg-1: #b98b72;   /* crema tostado oscuro */
-  --nv-bg-2: #a86f52;   /* naranja pastel más profundo */
-  --nv-bg-3: #8f6a57;   /* cacao/beige oscuro */
+  /* Fondos cálidos */
+  --nv-bg-1: #b98b72;
+  --nv-bg-2: #a86f52;
+  --nv-bg-3: #8f6a57;
 
   /* Texto */
   --nv-text: #221b18;
   --nv-muted: rgba(34, 27, 24, 0.72);
 
-  /* Superficies */
-  --nv-card: rgba(255,255,255,.78);
-  --nv-card-strong: rgba(255,255,255,.86);
-  --nv-border: rgba(0,0,0,.12);
+  /* Superficies (NO blanco puro) */
+  --nv-card: rgba(245, 235, 226, 0.78);
+  --nv-card-strong: rgba(242, 228, 215, 0.88);
+  --nv-border: rgba(0, 0, 0, 0.12);
 
   /* Acentos */
-  --nv-primary: #c86638;   /* naranja navideño */
-  --nv-secondary: #6fa084; /* verde apagado */
+  --nv-primary: #c86638;
+  --nv-secondary: #6fa084;
 }
 
 /* =========================
    BASE
 ========================= */
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   color: var(--nv-text);
 }
 
-/* Si usas Bootstrap, su font-stack ya es correcta; si no, mantenemos una segura */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Ubuntu, sans-serif;
   min-height: 100vh;
 
-  background:
-    radial-gradient(circle at 18% 18%, rgba(200,102,56,.22), transparent 55%),
-    radial-gradient(circle at 82% 30%, rgba(111,160,132,.18), transparent 55%),
-    radial-gradient(circle at 50% 88%, rgba(214,195,174,.22), transparent 60%),
+  background: radial-gradient(
+      circle at 18% 18%,
+      rgba(200, 102, 56, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 82% 30%,
+      rgba(111, 160, 132, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 50% 88%,
+      rgba(214, 195, 174, 0.22),
+      transparent 60%
+    ),
     linear-gradient(180deg, var(--nv-bg-1), var(--nv-bg-3));
 }
 
 /* =========================
-   SNOW CANVAS
-   (lo hacemos más visible con blend + opacidad)
+   SNOW
 ========================= */
-#snow{
+#snow {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: .95;
-  mix-blend-mode: screen; /* ayuda a que destaque sobre fondos cálidos */
+  opacity: 0.95;
+  mix-blend-mode: screen;
 }
 
-/* Contenido encima del canvas */
-.nv-bg,
-.nv-page,
-.nv-topbar,
-.nv-surface,
-.nv-footer {
+/* Todo el contenido por encima */
+.bg,
+.container,
+.navbar,
+.card,
+footer {
   position: relative;
   z-index: 1;
 }
 
 /* =========================
-   LAYOUT (no usar .container/.card de Bootstrap)
+   GLASS CARDS (Bootstrap)
 ========================= */
-.nv-page{
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.nv-surface{
+.card-glass {
   background: var(--nv-card);
   border: 1px solid var(--nv-border);
+  backdrop-filter: blur(8px);
   border-radius: 18px;
-  padding: 16px;
-  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
 }
 
 /* =========================
-   TOPBAR
+   NAVBAR
 ========================= */
-.nv-topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  margin-bottom:18px;
+.bg-glass {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
 }
 
-.nv-brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.nv-brand-badge{
-  width:40px;
-  height:40px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  background: linear-gradient(180deg, rgba(239,68,68,.28), rgba(34,197,94,.20));
-  border:1px solid var(--nv-border);
-}
-
-.nv-brand-title{ font-weight:900; font-size:18px; }
-.nv-brand-subtitle{ font-size:12px; color: var(--nv-muted); }
-
-/* Links de navegación (sin pisar .nav-link de Bootstrap) */
-.nv-nav{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-.nv-navlink{
-  color: rgba(255,255,255,.82);
-  text-decoration:none;
-  font-weight:800;
-  font-size:13px;
-  padding: 8px 10px;
+.brand-badge {
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,.16);
-  background: rgba(0,0,0,.16);
-}
-.nv-navlink:hover{
-  color: #fff;
-  background: rgba(0,0,0,.24);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(
+    180deg,
+    rgba(239, 68, 68, 0.35),
+    rgba(34, 197, 94, 0.25)
+  );
 }
 
 /* =========================
    HERO
 ========================= */
-.nv-hero{
-  margin-top:18px;
-  display:grid;
-  grid-template-columns: 1.2fr .8fr;
-  gap:16px;
-  overflow:hidden;
+.hero-wrap {
+  color: #fff;
 }
 
-.nv-hero-title{
-  margin:10px 0 10px;
-  font-size:34px;
-  line-height:1.08;
+.badge-glass {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 10px;
+  border-radius: 999px;
 }
 
-.nv-hero-text{
-  margin:0 0 16px;
-  color: rgba(255,255,255,.82);
-  max-width:58ch;
-}
-
-.nv-hero-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:16px;
-}
-
-/* Badge (sin pisar .badge Bootstrap) */
-.nv-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:8px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.18);
-  background: rgba(0,0,0,.18);
-  font-size:12px;
-  color: rgba(255,255,255,.82);
-  font-weight:900;
-}
-.nv-badge-dot{
-  width:8px;
-  height:8px;
-  border-radius:999px;
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: linear-gradient(180deg, #ef4444, #22c55e);
-  box-shadow: 0 0 16px rgba(239,68,68,.35);
 }
 
-.nv-kpis{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:10px;
-  margin-top:8px;
-}
-.nv-kpi{
-  padding:12px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.16);
-  background: rgba(0,0,0,.18);
-}
-.nv-kpi-title{ font-size:12px; color: rgba(255,255,255,.78); font-weight:900; }
-.nv-kpi-value{ font-size:16px; font-weight:950; margin-top:6px; color:#fff; }
-.nv-kpi-sub{ font-size:12px; color: rgba(255,255,255,.78); margin-top:4px; }
-
-/* Hero right */
-.nv-hero-right{ position:relative; }
-
-.nv-hero-card{
-  border:1px solid rgba(255,255,255,.16);
-  background: rgba(0,0,0,.18);
-  border-radius:18px;
-  padding:14px;
-  color: #fff;
+.icon-chip {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(
+    180deg,
+    rgba(239, 68, 68, 0.35),
+    rgba(34, 197, 94, 0.25)
+  );
 }
 
-.nv-hero-card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-}
-.nv-hero-card-title{ font-weight:950; }
-
-.nv-pill{
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:900;
-  background: rgba(239,68,68,.22);
-  border:1px solid rgba(239,68,68,.45);
-}
-
-.nv-hero-product{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  margin-top:14px;
-}
-.nv-hero-product-icon{
-  width:44px;
-  height:44px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  background: linear-gradient(180deg, rgba(239,68,68,.25), rgba(34,197,94,.18));
-  border:1px solid rgba(255,255,255,.16);
-}
-.nv-hero-product-name{ font-weight:950; }
-.nv-hero-product-desc{ font-size:12px; color: rgba(255,255,255,.78); margin-top:2px; }
-.nv-hero-note{ margin-top:14px; color: rgba(255,255,255,.78); font-size:12px; }
-
-.nv-hero-glow{
-  position:absolute;
-  inset:-40px -40px auto auto;
-  width:240px;
-  height:240px;
-  border-radius:999px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(239,68,68,.22), transparent 60%),
-    radial-gradient(circle at 60% 60%, rgba(34,197,94,.18), transparent 62%);
-  filter: blur(10px);
-  pointer-events:none;
-}
-
-/* =========================
-   SECCIONES / GRID
-========================= */
-.nv-section{ margin-top:22px; }
-
-.nv-section-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
-  gap:14px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
-}
-
-/* Inputs sin pisar .form-control de Bootstrap */
-.nv-input{
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.18);
-  background: rgba(0,0,0,.16);
-  color: #fff;
-  font-size:13px;
-}
-.nv-input::placeholder{ color: rgba(255,255,255,.70); }
-
-.nv-grid{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap:14px;
-}
-
-/* =========================
-   CARDS estilo tienda
-========================= */
-.nv-product-card,
-.nv-offer-card{
-  border-radius:18px;
-  border:1px solid rgba(0,0,0,.10);
-  background: var(--nv-card-strong);
-  box-shadow: 0 10px 22px rgba(0,0,0,.10);
-  overflow:hidden;
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-.nv-product-card:hover,
-.nv-offer-card:hover{
-  transform: translateY(-3px);
-  box-shadow: 0 14px 30px rgba(0,0,0,.14);
-}
-
-.nv-card-media{
-  height: 150px;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(200,102,56,.22), transparent 55%),
-    radial-gradient(circle at 80% 30%, rgba(111,160,132,.18), transparent 55%),
-    linear-gradient(180deg, rgba(255,255,255,.25), rgba(255,255,255,.0));
-  border-bottom: 1px solid rgba(0,0,0,.08);
-}
-
-.nv-card-body{ padding: 14px; }
-.nv-card-title{ font-weight: 950; font-size: 16px; margin: 2px 0 6px; }
-.nv-card-desc{ font-size: 12px; color: var(--nv-muted); min-height: 34px; }
-
-.nv-card-meta{
-  margin-top: 12px;
-  display:flex;
-  justify-content: space-between;
-  align-items:center;
-  gap:10px;
-}
-
-.nv-price{ font-weight: 950; font-size: 15px; }
-
-.nv-tag{
-  font-size:12px;
-  font-weight:900;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.55);
-  color: rgba(47,38,34,.92);
-}
-
-/* =========================
-   CALLOUT
-========================= */
-.nv-callout{ display:flex; flex-direction:column; gap:10px; }
-.nv-callout-actions{ display:flex; gap:10px; flex-wrap:wrap; }
-
-.nv-divider{
-  height:1px;
-  background: rgba(255,255,255,.20);
-  margin:10px 0;
-}
-
-/* =========================
-   FOOTER / HELPERS
-========================= */
-.nv-footer{
-  margin-top: 32px;
-  text-align: center;
-  color: rgba(255,255,255,.82);
+.pill {
+  padding: 6px 10px;
+  border-radius: 999px;
   font-size: 12px;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.45);
 }
 
-/* Títulos */
-.nv-h1 { font-size:26px; margin:0; color:#fff; }
-.nv-muted { color: rgba(255,255,255,.78); }
-.nv-small { font-size:12px; }
+.glow {
+  position: absolute;
+  inset: -40px -40px auto auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(
+      circle at 30% 30%,
+      rgba(239, 68, 68, 0.25),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 60% 60%,
+      rgba(34, 197, 94, 0.18),
+      transparent 62%
+    );
+  filter: blur(12px);
+}
+
+/* =========================
+   PRODUCT CARDS
+========================= */
+.card.card-glass img {
+  object-fit: cover;
+}
+
+.card-body {
+  color: var(--nv-text);
+}
+
+.price {
+  font-weight: 800;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--nv-border);
+}
+
+/* =========================
+   INPUTS
+========================= */
+.input-glass {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.input-glass::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* =========================
+   CONTACTO
+========================= */
+.contact-card {
+  background: var(--nv-card-strong);
+  border: 1px solid var(--nv-border);
+  border-radius: 18px;
+}
+
+.contact-note {
+  background: var(--nv-card);
+  border: 1px solid var(--nv-border);
+  border-radius: 18px;
+}
+
+/* Botones claros corregidos */
+.contact-card .btn-outline-light {
+  border-color: rgba(0, 0, 0, 0.35);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.contact-card .btn-outline-light:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* =========================
+   ADMIN
+========================= */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.brand-title {
+  font-weight: 900;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: var(--nv-muted);
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  background: var(--nv-card-strong);
+  border: 1px solid var(--nv-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.card-media {
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+}
+
+.card-title {
+  font-weight: 900;
+}
+
+.card-desc {
+  font-size: 13px;
+  color: var(--nv-muted);
+}
+
+/* =========================
+   FOOTER
+========================= */
+footer {
+  color: rgba(255, 255, 255, 0.8);
+}
 
 /* =========================
    RESPONSIVE
 ========================= */
-@media (max-width: 980px){
-  .nv-hero{ grid-template-columns:1fr; }
-  .nv-kpis{ grid-template-columns:1fr; }
-  .nv-grid{ grid-template-columns:1fr; }
-}
-/* =========================
-   CONTACTO (más formal/legible)
-========================= */
-.contact-card{
-  border-radius: 16px;
-  border: 1px solid rgba(0,0,0,.10);
-}
-
-.contact-note{
-  border-radius: 16px;
-  border: 1px solid rgba(0,0,0,.10);
-}
-
-/* Evita botones “claros” sobre blanco: si algún outline-light se cuela dentro de cards blancas */
-.card .btn-outline-light{
-  border-color: rgba(0,0,0,.25);
-  color: rgba(0,0,0,.75);
-}
-.card .btn-outline-light:hover{
-  background: rgba(0,0,0,.06);
+@media (max-width: 768px) {
+  .hero-wrap h1 {
+    font-size: 1.6rem;
+  }
 }
