@@ -381,3 +381,24 @@ body {
   .nv-kpis{ grid-template-columns:1fr; }
   .nv-grid{ grid-template-columns:1fr; }
 }
+/* =========================
+   CONTACTO (más formal/legible)
+========================= */
+.contact-card{
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+.contact-note{
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+/* Evita botones “claros” sobre blanco: si algún outline-light se cuela dentro de cards blancas */
+.card .btn-outline-light{
+  border-color: rgba(0,0,0,.25);
+  color: rgba(0,0,0,.75);
+}
+.card .btn-outline-light:hover{
+  background: rgba(0,0,0,.06);
+}
