@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin | Login</title>
 
-  <!-- Bootstrap 5 -->
+  <!-- Bootstrap CSS (CDN) -->
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
@@ -18,96 +18,147 @@
 </head>
 
 <body>
+  <!-- Nieve -->
   <canvas id="snow"></canvas>
 
-  <div class="bg">
-    <div class="container py-4">
-
-      <!-- TOPBAR -->
-      <header class="topbar mb-4">
-        <div class="brand">
-          <div class="brand-badge">🎄</div>
-          <div>
-            <div class="brand-title">Navidad Golosa by Pastelería El Caballo Goloso</div>
-            <div class="brand-subtitle">Zona Administrador</div>
-          </div>
-        </div>
-
-        <nav class="nav">
-          <a class="btn ghost small-btn" href="./index.html">Volver</a>
-        </nav>
-      </header>
-
-      <!-- LOGIN CARD -->
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-8 col-lg-5">
-          <main class="card auth-card">
-
-            <h1 class="h1 mb-2">Acceso administrador</h1>
-            <p class="muted mb-3">
-              Introduce tus credenciales para gestionar productos y pedidos.
-            </p>
-
-            <form id="loginForm" class="auth-form">
-
-              <div class="mb-3">
-                <label for="email" class="auth-label">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  class="input form-control"
-                  type="email"
-                  autocomplete="username"
-                  required
-                  placeholder="admin@tuweb.com"
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="password" class="auth-label">
-                  Contraseña
-                </label>
-                <input
-                  id="password"
-                  class="input form-control"
-                  type="password"
-                  autocomplete="current-password"
-                  required
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <div class="d-grid gap-2">
-                <button
-                  id="loginBtn"
-                  class="btn primary"
-                  type="submit"
-                >
-                  Entrar
-                </button>
-              </div>
-
-              <div
-                id="loginMsg"
-                class="auth-msg muted small mt-2"
-                aria-live="polite"
-              ></div>
-
-            </form>
-          </main>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-glass sticky-top border-bottom border-white-10">
+    <div class="container">
+  
+      <!-- BRAND -->
+      <a class="navbar-brand d-flex align-items-center gap-2 text-wrap" href="./index.html">
+        <span class="brand-badge">🎄</span>
+        <span class="fw-bold lh-sm">
+          Navidad Golosa
+          <span class="d-none d-md-inline">· Pastelería El Caballo Goloso</span>
+        </span>
+      </a>
+  
+      <!-- TOGGLER -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navMain"
+        aria-controls="navMain"
+        aria-expanded="false"
+        aria-label="Abrir menú"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+  
+      <!-- NAV -->
+      <div class="collapse navbar-collapse" id="navMain">
+  
+        <!-- LINKS -->
+        <ul class="navbar-nav ms-auto gap-lg-2 align-items-lg-center">
+          <li class="nav-item">
+            <a class="nav-link" href="./index.html#productos">Productos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./index.html#ofertas">Ofertas</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./index.html#encargos">Encargos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./contacto.html">Contacto</a>
+          </li>
+        </ul>
+  
+        <!-- ACTIONS -->
+        <div class="d-flex flex-wrap gap-2 ms-lg-3 mt-3 mt-lg-0 align-items-center">
+  
+          <!-- CARRITO -->
+          <button
+            id="cartBtn"
+            class="btn btn-outline-light btn-sm"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#cartCanvas"
+            aria-controls="cartCanvas"
+          >
+            🛒 Carrito
+            <span id="cartCount" class="badge text-bg-light ms-1">0</span>
+          </button>
+  
+          <!-- ADMIN -->
+          <a class="btn btn-outline-light btn-sm" href="./login.html">
+            Admin
+          </a>
+  
         </div>
       </div>
-
-      <!-- FOOTER -->
-      <footer class="footer mt-4">
-        <span class="muted small">© 2025 Web Navidad</span>
-      </footer>
-
     </div>
-  </div>
+  </nav>
+  
 
-  <!-- JS -->
+  <!-- Contenido (login) -->
+  <main class="py-4 py-lg-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-6">
+          <div class="card card-glass">
+            <div class="card-body p-4 p-lg-5">
+              <h1 class="h3 fw-bold mb-1">Acceso administrador</h1>
+              <p class="text-muted mb-4">Introduce tus credenciales para gestionar productos y pedidos.</p>
+
+              <form id="loginForm" class="vstack gap-3">
+                <div>
+                  <label class="form-label fw-semibold">Email</label>
+                  <input
+                    id="email"
+                    class="form-control input-glass"
+                    type="email"
+                    autocomplete="username"
+                    required
+                    placeholder="admin@webnavidad.com"
+                  />
+                </div>
+
+                <div>
+                  <label class="form-label fw-semibold">Contraseña</label>
+                  <input
+                    id="password"
+                    class="form-control input-glass"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <button id="loginBtn" class="btn btn-primary w-100" type="submit">Entrar</button>
+
+                <div id="loginMsg" class="text-muted small" aria-live="polite"></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="text-center text-muted small mt-3">
+            Consejo: cambia el password por defecto en variables de entorno (ADMIN_PASSWORD).
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer (igual que index) -->
+  <footer class="py-4">
+    <div class="container d-flex flex-wrap justify-content-between gap-2 text-muted small">
+      <span>© 2025 Web Navidad</span>
+      <span>Admin</span>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS (CDN) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+
+  <!-- Tu JS -->
   <script defer src="./assets/js/config.js"></script>
   <script defer src="./assets/js/login.js"></script>
   <script defer src="./assets/js/snow.js"></script>

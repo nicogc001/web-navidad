@@ -21,35 +21,77 @@
   <!-- Nieve -->
   <canvas id="snow"></canvas>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-glass sticky-top border-bottom border-white-10">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-        <span class="brand-badge">🎄</span>
-        <span class="fw-bold">Navidad Golosa by Pastelería El Caballo Goloso</span>
-      </a>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-glass sticky-top border-bottom border-white-10">
+  <div class="container">
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <!-- BRAND -->
+    <a class="navbar-brand d-flex align-items-center gap-2 text-wrap" href="./index.html">
+      <span class="brand-badge">🎄</span>
+      <span class="fw-bold lh-sm">
+        Navidad Golosa
+        <span class="d-none d-md-inline">· Pastelería El Caballo Goloso</span>
+      </span>
+    </a>
 
-      <div class="collapse navbar-collapse" id="navMain">
-        <ul class="navbar-nav ms-auto gap-lg-2">
-          <li class="nav-item"><a class="nav-link" href="#productos">Productos</a></li>
-          <li class="nav-item"><a class="nav-link" href="#ofertas">Ofertas</a></li>
-          <li class="nav-item"><a class="nav-link" href="#encargos">Encargos</a></li>
-        </ul>
-        <button id="cartBtn" class="btn btn-outline-light btn-sm ms-2" type="button"
-          data-bs-toggle="offcanvas" data-bs-target="#cartCanvas">
-          Carrito <span id="cartCount" class="badge text-bg-light ms-1">0</span>
+    <!-- TOGGLER -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navMain"
+      aria-controls="navMain"
+      aria-expanded="false"
+      aria-label="Abrir menú"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- NAV -->
+    <div class="collapse navbar-collapse" id="navMain">
+
+      <!-- LINKS -->
+      <ul class="navbar-nav ms-auto gap-lg-2 align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link" href="./index.html#productos">Productos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./index.html#ofertas">Ofertas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./index.html#encargos">Encargos</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="./contacto.html">Contacto</a>
+        </li>
+      </ul>
+
+      <!-- ACTIONS -->
+      <div class="d-flex flex-wrap gap-2 ms-lg-3 mt-3 mt-lg-0 align-items-center">
+
+        <!-- CARRITO -->
+        <button
+          id="cartBtn"
+          class="btn btn-outline-light btn-sm"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#cartCanvas"
+          aria-controls="cartCanvas"
+        >
+          🛒 Carrito
+          <span id="cartCount" class="badge text-bg-light ms-1">0</span>
         </button>
 
-        <div class="d-flex ms-lg-3 mt-3 mt-lg-0">
-          <a class="btn btn-outline-light btn-sm" href="./login.html">Admin</a>
-        </div>
+        <!-- ADMIN -->
+        <a class="btn btn-outline-light btn-sm" href="./login.html">
+          Admin
+        </a>
+
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
+
 
   <!-- Hero -->
   <header class="hero-wrap py-4 py-lg-5">
