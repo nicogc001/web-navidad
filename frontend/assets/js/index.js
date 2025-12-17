@@ -59,7 +59,8 @@
 
   // =====================
   function ensureToastEl() {
-    if (toastEl || !document?.body) return toastEl;
+    if (toastEl) return toastEl;
+    if (typeof document === "undefined" || !document.body) return null;
     toastEl = document.createElement("div");
     toastEl.className = "toast-cart";
     toastEl.setAttribute("role", "status");
@@ -125,12 +126,18 @@
 
   function addToCart(p) {
     const stock = Number(p.stock ?? 0);
-    if (stock <= 0) return;
+    if (stock <= 0) {
+      showToast("Sin stock, contáctanos para encargarlo");
+      return;
+    }
 
     const found = cart.find((it) => it.productoId === p.id);
     if (found) {
       // Evitar superar stock (en cliente)
-      if (found.cantidad + 1 > stock) return;
+      if (found.cantidad + 1 > stock) {
+        showToast("Has alcanzado el stock disponible");
+        return;
+      }
       found.cantidad += 1;
     } else {
       cart.push({
