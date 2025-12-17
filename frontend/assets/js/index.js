@@ -420,7 +420,7 @@
         </div>`;
     }
   }
-
+/*
   // =====================
   // Checkout -> Modal -> crear pedido en BD -> WhatsApp
   // =====================
@@ -523,7 +523,7 @@
 
       abrirWhatsApp(WA, fallbackMsg);
     }
-  });
+  }); */
 
   // =====================
   // Events
@@ -544,33 +544,39 @@
 })();
 
 // =====================
-// WhatsApp helper
-// =====================
-function abrirWhatsApp(numero, mensaje) {
-  const phone = String(numero || "").replace(/\D/g, "");
-  if (!phone) return;
-
-  const text = encodeURIComponent(mensaje || "");
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
-
-  // Fallback web (si no hay app o iOS bloquea)
-  const webUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${text}`;
-
-  if (!isIOS) {
-    // En no-iOS suele funcionar bien wa.me
-    window.location.assign(`https://wa.me/${phone}?text=${text}`);
-    return;
+  // WhatsApp Logic
+  // =====================
+  function abrirWhatsApp(numero, mensaje) {
+    const phone = String(numero).replace(/\D/g, "");
+    if (!phone) return;
+    const text = encodeURIComponent(mensaje);
+    const url = `https://wa.me/${phone}?text=${text}`;
+    
+    // Crear un enlace invisible y disparar el click para evitar bloqueos de pop-up
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
-  // Intento de abrir la app
-  const appUrl = `whatsapp://send?phone=${phone}&text=${text}`;
+  function buildWhatsappMessage({ pedidoId, lineas = [], total, fecha, nombre, telefono, observaciones }) {
+    const lineasTxt = lineas
+      .map((l) => `- ${l.nombre} x${l.cantidad} (${money(l.precioUnitario || l.precio)})`)
+      .join("\n");
 
-  // Intentar abrir la app en la misma pestaña
-  window.location.href = appUrl;
+    const pedidoLine = pedidoId ? ` (Pedido #${pedidoId})` : " (Pedido Web)";
 
-  // Si no abre la app, caer a la web
-  setTimeout(() => {
-    window.location.assign(webUrl);
-  }, 800);
-}
+    return (
+      `Hola, quiero hacer un encargo${pedidoLine}:\n\n` +
+      `${lineasTxt}\n\n` +
+      `*Total estimado: ${money(total)}*\n` +
+      `Fecha recogida: ${fecha || "-"}\n` +
+      `Cliente: ${nombre}\n` +
+      `Tel: ${telefono}\n` +
+      `Obs: ${observaciones?.trim() || "-"}`
+    );
+  }
 
