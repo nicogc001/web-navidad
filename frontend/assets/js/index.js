@@ -7,6 +7,7 @@
   const searchInput = document.getElementById("searchInput");
   const sortSelect = document.getElementById("sortSelect");
   const apiUrl = document.getElementById("apiUrl");
+  const whatsBtn = document.getElementById("whatsBtn");
 
   // Carrito UI
   const cartCount = document.getElementById("cartCount");
@@ -28,6 +29,15 @@
   if (apiUrl) apiUrl.textContent = API;
 
   let productos = [];
+  let toastTimeout;
+  let toastEl;
+  if (document?.body) {
+    toastEl = document.createElement("div");
+    toastEl.className = "toast-cart";
+    toastEl.setAttribute("role", "status");
+    toastEl.setAttribute("aria-live", "polite");
+    document.body.appendChild(toastEl);
+  }
 
   // =====================
   // Utils
@@ -52,6 +62,17 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  // =====================
+  function showToast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      toastEl.classList.remove("show");
+    }, 2200);
   }
 
   // =====================
@@ -118,6 +139,7 @@
 
     writeCart(cart);
     renderCart();
+    showToast("Producto añadido al carrito");
   }
 
   function setQty(productoId, qty) {
@@ -469,6 +491,11 @@ Observaciones: ${(pmObs?.value || "").trim() || "-"}`;
   // =====================
   searchInput?.addEventListener("input", applyFilters);
   sortSelect?.addEventListener("change", applyFilters);
+  whatsBtn?.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    if (!WA) return;
+    abrirWhatsApp(WA, "Hola, me gustaría hacer un encargo de Navidad ✨");
+  });
 
   // Init
   updateCartBadge();
