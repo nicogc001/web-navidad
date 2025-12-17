@@ -77,7 +77,7 @@
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
       el.classList.remove("show");
-    }, 3500);
+    }, 4200);
   }
 
   // =====================
@@ -135,7 +135,7 @@
     if (found) {
       // Evitar superar stock (en cliente)
       if (found.cantidad + 1 > stock) {
-        showToast("Has alcanzado el stock disponible");
+        showToast("Has alcanzado el stock disponible, contacta con nosotros para encargar más o ver disponibilidad.");
         return;
       }
       found.cantidad += 1;
@@ -523,15 +523,5 @@ function abrirWhatsApp(numero, mensaje) {
   if (!phone) return;
 
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje || "")}`;
-  const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent || "");
-
-  if (isIOS) {
-    window.location.href = url;
-    return;
-  }
-
-  const newWindow = window.open(url, "_blank");
-  if (!newWindow) {
-    window.location.href = url;
-  }
+  window.location.href = url;
 }
