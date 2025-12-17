@@ -31,13 +31,6 @@
   let productos = [];
   let toastTimeout;
   let toastEl;
-  if (document?.body) {
-    toastEl = document.createElement("div");
-    toastEl.className = "toast-cart";
-    toastEl.setAttribute("role", "status");
-    toastEl.setAttribute("aria-live", "polite");
-    document.body.appendChild(toastEl);
-  }
 
   // =====================
   // Utils
@@ -65,14 +58,25 @@
   }
 
   // =====================
+  function ensureToastEl() {
+    if (toastEl || !document?.body) return toastEl;
+    toastEl = document.createElement("div");
+    toastEl.className = "toast-cart";
+    toastEl.setAttribute("role", "status");
+    toastEl.setAttribute("aria-live", "polite");
+    document.body.appendChild(toastEl);
+    return toastEl;
+  }
+
   function showToast(msg) {
-    if (!toastEl) return;
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
+    const el = ensureToastEl();
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
-      toastEl.classList.remove("show");
-    }, 2200);
+      el.classList.remove("show");
+    }, 3500);
   }
 
   // =====================
