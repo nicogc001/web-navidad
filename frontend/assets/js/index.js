@@ -550,6 +550,27 @@ function abrirWhatsApp(numero, mensaje) {
   const phone = String(numero || "").replace(/\D/g, "");
   if (!phone) return;
 
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje || "")}`;
-  window.location.href = url;
+  const text = encodeURIComponent(mensaje || "");
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
+
+  // Fallback web (si no hay app o iOS bloquea)
+  const webUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${text}`;
+
+  if (!isIOS) {
+    // En no-iOS suele funcionar bien wa.me
+    window.location.assign(`https://wa.me/${phone}?text=${text}`);
+    return;
+  }
+
+  // Intento de abrir la app
+  const appUrl = `whatsapp://send?phone=${phone}&text=${text}`;
+
+  // Intentar abrir la app en la misma pestaña
+  window.location.href = appUrl;
+
+  // Si no abre la app, caer a la web
+  setTimeout(() => {
+    window.location.assign(webUrl);
+  }, 800);
 }
+
