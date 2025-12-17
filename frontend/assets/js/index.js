@@ -452,15 +452,13 @@ Nombre: ${nombreCliente}
 Teléfono: ${telefono}
 Observaciones: ${(pmObs?.value || "").trim() || "-"}`;
 
-      const url = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
-
       clearCart();
       if (pmMsg) pmMsg.textContent = "Abriendo WhatsApp…";
 
       const modal = bootstrap.Modal.getOrCreateInstance(pedidoModalEl);
       modal.hide();
 
-      window.open(url, "_blank");
+      abrirWhatsApp(WA, msg);
     } catch (e) {
       if (pmMsg) pmMsg.textContent = e.message;
     }
@@ -484,89 +482,18 @@ Observaciones: ${(pmObs?.value || "").trim() || "-"}`;
 // =====================
 function abrirWhatsApp(numero, mensaje) {
   const phone = String(numero || "").replace(/\D/g, "");
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+  if (!phone) return;
 
-  // En móvil abre la app, en desktop WhatsApp Web
-  window.location.href = url;
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje || "")}`;
+  const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent || "");
+
+  if (isIOS) {
+    window.location.href = url;
+    return;
+  }
+
+  const newWindow = window.open(url, "_blank");
+  if (!newWindow) {
+    window.location.href = url;
+  }
 }
-
-function construirMensaje({ nombre, telefono, fecha, lugar, obs, items, total }) {
-  let msg = `🎄 *Nuevo encargo Web Navidad*\n\n`;
-
-  msg += `👤 *Nombre:* ${nombre}\n`;
-  msg += `📞 *Teléfono:* ${telefono}\n`;
-  if (fecha) msg += `📅 *Fecha de recogida:* ${fecha}\n`;
-  if (lugar) msg += `📍 *Recogida en:* ${lugar}\n`;
-  if (obs) msg += `📝 *Observaciones:* ${obs}\n`;
-
-  msg += `\n🧾 *Productos:*\n`;
-  (items || []).forEach((it) => {
-    const pu = Number(it.precioUnitario || 0);
-    const qty = Number(it.cantidad || 0);
-    msg += `• ${it.nombre} x${qty} — ${(pu * qty).toFixed(2)} €\n`;
-  });
-
-  msg += `\n💶 *Total estimado:* ${Number(total || 0).toFixed(2)} €`;
-
-  // Info fija que pediste (recogida)
-  msg += `\n📦 *Recogida:* Torrelodones Pueblo o CC Espacio Torrelodones`;
-
-  msg += `\n\nGracias 🙌`;
-  return msg;
-}
-
-// =====================
-// Confirmar pedido (modal)
-// =====================
-const pmConfirmBtn = document.getElementById("pmConfirm");
-if (pmConfirmBtn) {
-  pmConfirmBtn.addEventListener("click", async () => {
-    const nombre = document.getElementById("pmNombre")?.value.trim() || "";
-    const telefono = document.getElementById("pmTelefono")?.value.trim() || "";
-    const fecha = document.getElementById("pmFecha")?.value || "";
-    const lugar = document.getElementById("pmLugar")?.value || "";
-    const obs = document.getElementById("pmObs")?.value || "";
-    const pmMsg = document.getElementById("pmMsg");
-
-    if (!nombre || !telefono) {
-      if (pmMsg) pmMsg.textContent = "Nombre y teléfono son obligatorios";
-      return;
-    }
-
-    try {
-      // 1) Crear pedido en backend
-      const r = await fetch(`${API}/api/pedidos/publico`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombreCliente: nombre,
-          telefono,
-          fechaRecogida: fecha,
-          lugarRecogida: lugar,
-          observaciones: obs,
-          items: carritoItems, // tu carrito actual
-        }),
-      });
-
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || "Error creando pedido");
-
-      // 2) Construir mensaje
-      const mensaje = construirMensaje({
-        nombre,
-        telefono,
-        fecha,
-        lugar: lugar || "Torrelodones Pueblo o CC Espacio Torrelodones",
-        obs,
-        items: data.lineas,
-        total: data.total,
-      });
-
-      // 3) Abrir WhatsApp (tu número)
-      abrirWhatsApp("34605978052", mensaje);
-    } catch (e) {
-      if (pmMsg) pmMsg.textContent = e.message || "Error creando pedido";
-    }
-  });
-}
-
