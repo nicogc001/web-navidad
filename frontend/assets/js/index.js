@@ -80,6 +80,24 @@
     }, 4200);
   }
 
+  function buildWhatsappMessage({ pedidoId, lineas = [], total, fecha, nombre, telefono, observaciones }) {
+    const lineasTxt = lineas
+      .map((l) => `- ${l.nombre} x${l.cantidad} (${money(l.precioUnitario)})`)
+      .join("\n");
+
+    const pedidoLine = pedidoId ? ` (Pedido #${pedidoId})` : " (Pedido desde la web)";
+
+    return (
+      `Hola, quiero hacer un encargo${pedidoLine}:\n\n` +
+      `${lineasTxt}\n\n` +
+      `Total estimado: ${money(total)}\n` +
+      `Fecha de recogida: ${fecha || "-"}\n` +
+      `Nombre: ${nombre}\n` +
+      `Teléfono: ${telefono}\n` +
+      `Observaciones: ${observaciones?.trim() || "-"}`
+    );
+  }
+
   // =====================
   // Carrito (localStorage)
   // =====================
@@ -470,20 +488,15 @@
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "No se pudo crear el pedido");
 
-      const lineasTxt = (data.lineas || [])
-        .map((l) => `- ${l.nombre} x${l.cantidad} (${money(l.precioUnitario)})`)
-        .join("\n");
-
-      const msg =
-`Hola, quiero hacer un encargo (Pedido #${data.pedidoId}):
-
-${lineasTxt}
-
-Total estimado: ${money(data.total)}
-Fecha de recogida: ${pmFecha?.value || "-"}
-Nombre: ${nombreCliente}
-Teléfono: ${telefono}
-Observaciones: ${(pmObs?.value || "").trim() || "-"}`;
+      const msg = buildWhatsappMessage({
+        pedidoId: data.pedidoId,
+        lineas: data.lineas || [],
+        total: data.total,
+        fecha: pmFecha?.value || "-",
+        nombre: nombreCliente,
+        telefono,
+        observaciones: pmObs?.value || "",
+      });
 
       clearCart();
       if (pmMsg) pmMsg.textContent = "Abriendo WhatsApp…";
@@ -493,7 +506,22 @@ Observaciones: ${(pmObs?.value || "").trim() || "-"}`;
 
       abrirWhatsApp(WA, msg);
     } catch (e) {
-      if (pmMsg) pmMsg.textContent = e.message;
+      if (pmMsg) pmMsg.textContent = e.message || "No se pudo crear el pedido. Te atendemos por WhatsApp.";
+
+      const fallbackMsg = buildWhatsappMessage({
+        lineas: cart.map((it) => ({
+          nombre: it.nombre,
+          cantidad: it.cantidad,
+          precioUnitario: it.precio,
+        })),
+        total: cartSum(),
+        fecha: pmFecha?.value || "-",
+        nombre: nombreCliente,
+        telefono,
+        observaciones: pmObs?.value || "",
+      });
+
+      abrirWhatsApp(WA, fallbackMsg);
     }
   });
 
